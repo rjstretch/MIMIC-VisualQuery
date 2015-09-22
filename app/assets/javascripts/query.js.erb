@@ -1,0 +1,1146 @@
+// Tell sprockets which files to watch for changes.
+// When these files are altered, sprockets will know to recompile the CSS
+// such that it points to the correct copy of the asset.
+//
+//= depend_on_asset "D_LABITEMS.txt"
+
+setupQueryInterface = function() {
+  var $b = $('#icustay_detail_builder');
+  var $c = $('#medevents_builder');
+  var $d = $('#labevents_builder');
+  var $e = $('#icd_codes_builder');
+
+  // Define filters
+  var options = getOptions();
+
+  // Initialize the builders
+  $('#icustay_detail_builder').queryBuilder(getOptions(getIcustayDetailFilters()));
+  $('#medevents_builder').queryBuilder(getOptions(getMedeventsFilters()));
+  $('#labevents_builder').queryBuilder(getOptions(getLabeventsFilters()));
+  $('#icd_codes_builder').queryBuilder(getOptions(getIcdCodeFilters()));
+
+  // Remove the default rules from most of the builders
+  $('#medevents_builder_rule_0').find('button.btn-danger')[0].click();
+  $('#labevents_builder_rule_0').find('button.btn-danger')[0].click();
+  $('#icd_codes_builder_rule_0').find('button.btn-danger')[0].click();
+
+  // Remove the 'OR' buttons from the builders.
+  $.each($('.group-conditions > label'), function(index, value) {
+    if ((index % 2) == 1) {
+      value.remove();
+    }
+  });
+
+  // Remove the 'Add Group' buttons from the builders
+  $.each($('.group-actions > button'), function(index, value) {
+    if ((index % 2) == 1) {
+      value.remove();
+    }
+  });
+
+  // After adding a new rule, trigger any behaviors the inputs / filter plugins might need
+  $('.mimic-builder').on('afterCreateRuleInput.queryBuilder', function(e, rule) {
+      // Logic specific to the selectize plugin
+      if (rule.filter.plugin == 'selectize') {
+          rule.$el.find('.rule-value-container').css('min-width', '200px')
+            .find('.selectize-control').removeClass('form-control');
+      }
+  });
+
+  // Setup the reset button
+  $('.reset').on('click', function() {
+    resetBuilder();
+    resetFieldSelectors();
+  });
+
+  // Setup the 'Get JSON' button
+  $('.parse-json').on('click', function() {
+    parseJSON();
+  });
+
+  // Setup the 'Get SQL' and 'Get SQL Statement' buttons
+  $('.parse-sql').on('click', function() {
+    parseSQL($(this).data('stmt')); // Pass flag specifying whether to use ? form of SQL
+  });
+
+  // Setup the 'Get MongoDB' button
+  $('.parse-mongo').on('click', function() {
+    parseMongo();
+  });
+
+  // Setup the 'Run Query' button
+  $('#submit-query').on('click', function() {
+    runQuery();
+  });
+
+  // Setup the AJAX loading animation
+  $('#loading-animation').hide();
+
+  // Setup the field selector buttons
+  setupFieldButtons();
+};
+
+// Define query builder options array
+getOptions = function(builderFilters) {
+  return {
+    // ALLOWS THE QUERY BUILDER TO BE EMPTY WITHOUT THROWING AN ERROR
+    allow_empty: true,
+
+    // CONFIGURATION OF PLUGINS (OPTIONAL)
+    plugins: {
+      'bt-tooltip-errors': { delay: 100},
+      'sortable': null,
+      'filter-description': { mode: 'bootbox' },
+      'bt-selectpicker': null,
+      'unique-filter': null,
+      'bt-checkbox': { color: 'primary' }
+    },
+
+    // ARRAY OF AVAILABLE FILTERS IN THE  BUILDER
+    filters: builderFilters
+  }
+};
+
+setupFieldButtons = function() {
+  $('#fields_icustay_detail').multiselect({
+    enableFiltering: true,
+    enableCaseInsensitiveFiltering: true,
+    maxHeight: 400,
+    includeSelectAllOption: true,
+    buttonText: function(options, select) {
+      var numberOfOptions = $(this).children('option').length;
+      if (options.length === 0) {
+         return 'General';
+      } else {
+         return 'General' + ' (' + options.length + ")";
+      }
+    }
+  });
+
+  $('#fields_admission').multiselect({
+    enableFiltering: true,
+    enableCaseInsensitiveFiltering: true,
+    maxHeight: 400,
+    includeSelectAllOption: true,
+    buttonText: function(options, select) {
+      var numberOfOptions = $(this).children('option').length;
+      if (options.length === 0) {
+         return 'Diagnoses';
+      } else {
+         return 'Diagnoses' + ' (' + options.length + ")";
+      }
+    }
+  });
+
+  $('#fields_comorbidities').multiselect({
+    enableFiltering: true,
+    enableCaseInsensitiveFiltering: true,
+    maxHeight: 400,
+    includeSelectAllOption: true,
+    buttonText: function(options, select) {
+      var numberOfOptions = $(this).children('option').length;
+      if (options.length === 0) {
+         return 'Comorbidities';
+      } else {
+         return 'Comorbidities' + ' (' + options.length + ")";
+      }
+    }
+  });
+
+  $('#fields_count').multiselect({
+    enableFiltering: true,
+    enableCaseInsensitiveFiltering: true,
+    maxHeight: 400,
+    includeSelectAllOption: false,
+    buttonText: function(options, select) {
+      var numberOfOptions = $(this).children('option').length;
+      if (options.length === 0) {
+         return 'Unique';
+      } else {
+         return 'Unique' + ' (' + options.length + ")";
+      }
+    }
+  });
+
+  $('#fields_aggregate').multiselect({
+    enableFiltering: true,
+    enableCaseInsensitiveFiltering: true,
+    maxHeight: 400,
+    includeSelectAllOption: false,
+    buttonText: function(options, select) {
+      var numberOfOptions = $(this).children('option').length;
+      if (options.length === 0) {
+         return 'Aggregate';
+      } else {
+         return 'Aggregate' + ' (' + options.length + ")";
+      }
+    }
+  });
+
+  $('#fields_average').multiselect({
+    enableFiltering: true,
+    enableCaseInsensitiveFiltering: true,
+    maxHeight: 400,
+    includeSelectAllOption: false,
+    buttonText: function(options, select) {
+      var numberOfOptions = $(this).children('option').length;
+      if (options.length === 0) {
+         return 'Average';
+      } else {
+         return 'Average' + ' (' + options.length + ")";
+      }
+    }
+  });
+};
+
+resetBuilder = function() {
+  $.each($('.mimic-builder'), function() {
+    $(this).queryBuilder('reset');
+  });
+  $('#result').addClass('hide').find('pre').empty();
+};
+
+resetFieldSelectors = function() {
+  $('.field_selector').multiselect('deselectAll', false);
+  $('.field_selector').multiselect('refresh');
+};
+
+runQuery = function() {
+  // Don't run the query if the query builder validation fails
+  var err1 = $('#icustay_detail_builder').queryBuilder('validate');
+  var err2 = $('#medevents_builder').queryBuilder('validate');
+  var err3 = $('#labevents_builder').queryBuilder('validate');
+  var err4 = $('#icd_codes_builder').queryBuilder('validate');
+  if ((err1 == false) ||
+     (err2 == false) ||
+     (err3 == false) ||
+     (err4 == false)) {
+    return false;
+  }
+  // Determine which database tables we need to join
+  var joins = [];
+  var json = $('#icustay_detail_builder').queryBuilder('getRules');
+
+  // Gather the 'where' (criterion) portion of the SQL query
+  var icustay_detail = $('#icustay_detail_builder').queryBuilder('getSQL', false, false);
+  var medevents = $('#medevents_builder').queryBuilder('getSQL', false, false);
+  var labevents = $('#labevents_builder').queryBuilder('getSQL', false, false);
+  var icd_codes = $('#icd_codes_builder').queryBuilder('getSQL', false, false);
+
+  // Gather the fields requested by the user
+  var cols = []
+  if ($('#fields_icustay_detail').val()) {
+    cols = cols.concat($('#fields_icustay_detail').val());
+  // } else {
+    // cols = ['icustay_id']; // Default minimum data to return
+  }
+  if ($('#fields_admission').val()) {
+    cols = cols.concat($('#fields_admission').val());
+  }
+  if ($('#fields_comorbidities').val()) {
+    cols = cols.concat($('#fields_comorbidities').val());
+  }
+
+  var distinct = [];
+  var v = $('#fields_count').val();
+  if (v == null) {
+    distinct = null;
+  } else {
+    $.each(v, function(index, value) {
+      if (value.match('^drgevents.')) {
+        distinct.push(['drgevents', value]);
+      } else if (value.match('^icd9.')) {
+        distinct.push(['icd_codes', value]);
+      } else {
+        distinct.push([null, value]);
+      }
+    });
+  }
+
+  var aggregate = [];
+  var v = $('#fields_aggregate').val();
+  if (v == null) {
+    aggregate = null;
+  } else {
+    $.each(v, function(index, value) {
+      if (value.match('^drgevents.')) {
+        aggregate.push(['drgevents', value]);
+      } else if (value.match('^icd9.')) {
+        aggregate.push(['icd_codes', value]);
+      } else {
+        aggregate.push([null, value]);
+      }
+    }); 
+  }
+
+  var average = [];
+  var v = $('#fields_average').val();
+  if (v == null) {
+    average = null;
+  } else {
+    $.each(v, function(index, value) {
+        average.push([null, value]);
+    });
+  }
+
+  // Asynchronously gather the results of the query and inject them into the HTML
+  $('#loading-animation').show();
+  $.ajax({
+    url: 'query',
+    type: 'POST',
+    data: { icustay_detail: icustay_detail.sql,
+            medevents: medevents.sql,
+            labevents: labevents.sql,
+            icd_codes: icd_codes.sql,
+            distinct: JSON.stringify(distinct),
+            aggregate: JSON.stringify(aggregate),
+            average: JSON.stringify(average),
+            fields: cols },
+    error: function() {
+      alert("An error occurred while processing your request. The most likely cause is that your query is not executable in its present form.")
+    },
+    success: function(data) {
+      $('#query-result').html(data);
+    },
+    complete: function() {
+      $('#loading-animation').hide();
+    }
+  });
+}
+
+$(function() {
+  // Initial setup
+  setupQueryInterface();
+});
+
+getIcustayDetailFilters = function() {
+  return [
+    /*
+     * GENDER
+     */
+    {
+      id: 'gender',
+      label: 'Gender',
+      type: 'string',
+      input: 'radio',
+      optgroup: null, 
+      values: {
+        'M': 'Male',
+        'F': 'Female'
+      },
+      default_value: 'M',
+      operators: ['equal',
+                  'is_null',
+                  'is_not_null']
+    },
+    /*
+     * AGE GROUP
+     */
+    {
+      id: 'icustay_age_group',
+      label: 'Age grouping',
+      type: 'string',
+      input: 'radio',
+      optgroup: null, 
+      values: {
+        'adult': 'Adult (>= 15 years)',
+        'neonate': 'Neonate (<= 1 year)',
+        'middle': 'Other'
+      },
+      default_value: 'adult',
+      operators: ['equal']
+    },
+    /*
+     * AGE AT START OF ICU STAY
+     */
+    {
+      id: 'icustay_admit_age',
+      label: 'Age (at start of ICU stay)',
+      type: 'integer',
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between',],
+      validation: {
+        min: 0,
+        max: 100
+      },
+      plugin: 'slider',
+      plugin_config: {
+        min: 0,
+        max: 100,
+        value: 0
+      },
+      onAfterSetValue: function(rule, value) {
+        var input = rule.$el.find('.rule-value-container input');
+        input.slider('setValue', value);
+        input.val(value);
+      }
+    },
+    /*
+     * HEIGHT
+     */
+    {
+      id: 'height',
+      label: 'Height',
+      type: 'integer',
+      size: 5,
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0
+      }
+    },
+    /*
+     * FIRST WEIGHT
+     */
+     {
+      id: 'weight_first',
+      label: 'Weight (first)',
+      type: 'integer',
+      size: 5,
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0
+      }
+    },
+    /*
+     * MIN WEIGHT
+     */
+    {
+      id: 'weight_min',
+      label: 'Weight (minimum)',
+      type: 'integer',
+      size: 5,
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0
+      }
+    },
+    /*
+     * MAX WEIGHT
+     */
+    {
+      id: 'weight_max',
+      label: 'Weight (maximum)',
+      type: 'integer',
+      size: 5,
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0
+      }
+    },
+    /*
+     * SAPSI FIRST
+     */
+    {
+      id: 'sapsi_first',
+      label: 'SAPS-I (first)',
+      type: 'integer',
+      size: 5,
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0
+      }
+    },
+    /*
+     * SAPSI MIN
+     */
+    {
+      id: 'sapsi_min',
+      label: 'SAPS-I (minimum)',
+      type: 'integer',
+      size: 5,
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0
+      }
+    },
+    /*
+     * SAPSI MAX
+     */
+    {
+      id: 'sapsi_max',
+      label: 'SAPS-I (maximum)',
+      type: 'integer',
+      size: 5,
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0
+      }
+    },
+    /*
+     * SOFA FIRST
+     */
+    {
+      id: 'sofa_first',
+      label: 'SOFA (first)',
+      type: 'integer',
+      size: 5,
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0
+      }
+    },
+    /*
+     * SOFA MIN
+     */
+    {
+      id: 'sofa_min',
+      label: 'SOFA (minimum)',
+      type: 'integer',
+      size: 5,
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0
+      }
+    },
+    /*
+     * SOFA MAX
+     */
+    {
+      id: 'sofa_max',
+      label: 'SOFA (maximum)',
+      type: 'integer',
+      size: 5,
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0
+      }
+    },
+    /*
+     * NUMBER OF MATCHED WAVEFORMS
+     */
+    {
+      id: 'matched_waveforms_num',
+      label: 'Number of matched waveforms',
+      type: 'integer',
+      size: 5,
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0
+      }
+    },
+    /*
+     * FIRST CAREUNIT
+     */
+    {
+      id: 'icustay_first_careunit',
+      label: 'First careunit location',
+      type: 'string',
+      input: 'checkbox',
+      optgroup: null, 
+      values: {
+        'CCU': 'CCU',
+        'CSRU': 'CSRU',
+        'FICU': 'FICU',
+        'MICU': 'MICU',
+        'NICU': 'NICU',
+        'SICU': 'SICU',
+        'UNKNOWN': 'Unknown'
+      },
+      operators: ['in',
+                  'not_in']
+    },
+    /*
+     * FIRST SERVICE
+     */
+    {
+      id: 'icustay_first_service',
+      label: 'First service',
+      type: 'string',
+      input: 'checkbox',
+      optgroup: null, 
+      values: {
+        'CCU': 'CCU',
+        'CSRU': 'CSRU',
+        'FICU': 'FICU',
+        'MICU': 'MICU',
+        'NICU': 'NICU',
+        'SICU': 'SICU',
+        'UNKNOWN': 'Unknown'
+      },      
+      operators: ['in',
+                  'not_in']
+    },
+    /*
+     * Last CAREUNIT
+     */
+    {
+      id: 'icustay_last_careunit',
+      label: 'Last careunit location',
+      type: 'string',
+      input: 'checkbox',
+      optgroup: null, 
+      values: {
+        'CCU': 'CCU',
+        'CSRU': 'CSRU',
+        'FICU': 'FICU',
+        'MICU': 'MICU',
+        'NICU': 'NICU',
+        'SICU': 'SICU',
+        'UNKNOWN': 'Unknown'
+      },
+      operators: ['in',
+                  'not_in']
+    },
+    /*
+     * LAST SERVICE
+     */
+    {
+      id: 'icustay_last_service',
+      label: 'Last service',
+      type: 'string',
+      input: 'checkbox',
+      optgroup: null, 
+      values: {
+        'CCU': 'CCU',
+        'CSRU': 'CSRU',
+        'FICU': 'FICU',
+        'MICU': 'MICU',
+        'NICU': 'NICU',
+        'SICU': 'SICU',
+        'UNKNOWN': 'Unknown'
+      },
+      operators: ['in',
+                  'not_in']
+    },
+    /*
+     * DIED (DURING ICU STAY)
+     */
+    {
+      id: 'icustay_expire_flg',
+      label: 'Died during ICU stay',
+      type: 'string',
+      input: 'radio',
+      optgroup: null, 
+      values: {
+        'N': 'No',
+        'Y': 'Yes'
+      },
+      default_value: 'N',
+      operators: ['equal',
+                  'is_null',
+                  'is_not_null']
+    },
+    /*
+     * DIED (DURING HOSPITAL ADMISSION)
+     */
+    {
+      id: 'hospital_expire_flg',
+      label: 'Died during hospital admission',
+      type: 'string',
+      input: 'radio',
+      optgroup: null, 
+      values: {
+        'N': 'No',
+        'Y': 'Yes'
+      },
+      default_value: 'N',
+      operators: ['equal',
+                  'is_null',
+                  'is_not_null']
+    },
+    /*
+     * DIED (WITHIN 1 YEAR)
+     */
+    {
+      id: 'expire_flg',
+      label: 'Died within 1 year (during or after discharge)',
+      type: 'string',
+      input: 'radio',
+      optgroup: null, 
+      values: {
+        'N': 'No',
+        'Y': 'Yes'
+      },
+      default_value: 'N',
+      operators: ['equal',
+                  'is_null',
+                  'is_not_null']
+    },
+    /*
+     * Subject's number of ICU stays for a given admission
+     */
+    {
+      id: 'icustay_total_num',
+      label: 'Subject\'s number of ICU stays (for any given admission)',
+      type: 'integer',
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0,
+        max: 100
+      },
+      plugin: 'slider',
+      plugin_config: {
+        min: 0,
+        max: 100,
+        value: 0
+      },
+      onAfterSetValue: function(rule, value) {
+        var input = rule.$el.find('.rule-value-container input');
+        input.slider('setValue', value);
+        input.val(value);
+      }
+    },
+    /*
+     * Subject's total number of ICU stays (all admissions)
+     */
+    {
+      id: 'subject_icustay_total_num',
+      label: 'Subject\'s total number of ICU stays (all admissions)',
+      type: 'integer',
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0,
+        max: 100
+      },
+      plugin: 'slider',
+      plugin_config: {
+        min: 0,
+        max: 100,
+        value: 0
+      },
+      onAfterSetValue: function(rule, value) {
+        var input = rule.$el.find('.rule-value-container input');
+        input.slider('setValue', value);
+        input.val(value);
+      }
+    },
+    /*
+     * Order of a subject's ICU stays (during a given admission)
+     */
+    {
+      id: 'icustay_seq',
+      label: 'Order of a subject\'s ICU stays (for any given admission)',
+      type: 'integer',
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0,
+        max: 100
+      },
+      plugin: 'slider',
+      plugin_config: {
+        min: 0,
+        max: 100,
+        value: 0
+      },
+      onAfterSetValue: function(rule, value) {
+        var input = rule.$el.find('.rule-value-container input');
+        input.slider('setValue', value);
+        input.val(value);
+      }
+    },
+    /*
+     * Overall order of a subject's ICU stays (all admissions)
+     */
+    {
+      id: 'subject_icustay_seq',
+      label: 'Order of a subject\'s ICU stays (all admissions)',
+      type: 'integer',
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0,
+        max: 100
+      },
+      plugin: 'slider',
+      plugin_config: {
+        min: 0,
+        max: 100,
+        value: 0
+      },
+      onAfterSetValue: function(rule, value) {
+        var input = rule.$el.find('.rule-value-container input');
+        input.slider('setValue', value);
+        input.val(value);
+      }
+    },
+    /*
+     * Subject's number of hospital admissions
+     */
+    {
+      id: 'hospital_total_num',
+      label: 'Subject\'s number of hospital admissions',
+      type: 'integer',
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0,
+        max: 100
+      },
+      plugin: 'slider',
+      plugin_config: {
+        min: 0,
+        max: 100,
+        value: 0
+      },
+      onAfterSetValue: function(rule, value) {
+        var input = rule.$el.find('.rule-value-container input');
+        input.slider('setValue', value);
+        input.val(value);
+      }
+    },
+    /*
+     * Order of subject's hospital admissions
+     */
+    {
+      id: 'hospital_seq',
+      label: 'Order of subject\'s hospital admissions',
+      type: 'integer',
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0,
+        max: 100
+      },
+      plugin: 'slider',
+      plugin_config: {
+        min: 0,
+        max: 100,
+        value: 0
+      },
+      onAfterSetValue: function(rule, value) {
+        var input = rule.$el.find('.rule-value-container input');
+        input.slider('setValue', value);
+        input.val(value);
+      }
+    },
+    /*
+     * First hospital admission?
+     */
+    {
+      id: 'hospital_first_flg',
+      label: 'Subject\'s first hospital admission',
+      type: 'string',
+      input: 'radio',
+      optgroup: null, 
+      values: {
+        'N': 'No',
+        'Y': 'Yes'
+      },
+      default_value: 'N',
+      operators: ['equal',
+                  'is_null',
+                  'is_not_null']
+    },
+    /*
+     * Last hospital admission?
+     */
+    {
+      id: 'hospital_last_flg',
+      label: 'Subject\'s last hospital admission',
+      type: 'string',
+      input: 'radio',
+      optgroup: null, 
+      values: {
+        'N': 'No',
+        'Y': 'Yes'
+      },
+      default_value: 'N',
+      operators: ['equal',
+                  'is_null',
+                  'is_not_null']
+    },
+    /*
+     * First ICU stay within a given admission?
+     */
+    {
+      id: 'icustay_first_flg',
+      label: 'Subject\'s first ICU stay (for any given admission)',
+      type: 'string',
+      input: 'radio',
+      optgroup: null, 
+      values: {
+        'N': 'No',
+        'Y': 'Yes'
+      },
+      default_value: 'N',
+      operators: ['equal',
+                  'is_null',
+                  'is_not_null']
+    },
+    /*
+     * Last ICU stay within a given admission?
+     */
+    {
+      id: 'icustay_last_flg',
+      label: 'Subject\'s last ICU stay (for any given admission)',
+      type: 'string',
+      input: 'radio',
+      optgroup: null, 
+      values: {
+        'N': 'No',
+        'Y': 'Yes'
+      },
+      default_value: 'N',
+      operators: ['equal',
+                  'is_null',
+                  'is_not_null']
+    },
+    /*
+     * HOSPITAL LOS
+     */
+    {
+      id: 'hospital_los',
+      label: 'Hospital length of stay in minutes',
+      type: 'integer',
+      size: 5,
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0
+      }
+    },
+    /*
+     * ICU LOS
+     */
+    {
+      id: 'icustay_los',
+      label: 'ICU length of stay in minutes (for any given ICU stay)',
+      type: 'integer',
+      size: 5,
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0
+      }
+    }
+    ]; // END OF FILTERS ARRAY
+};
+
+getMedeventsFilters = function() {
+  return [
+    /*
+     * MEDICATION ADMINISTERED
+    */
+    {
+      id: 'itemid',
+      label: 'Medication administered',
+      type: 'string',
+      input: 'select',
+      multiple: true,
+      unique: true,
+      operators: ['in',
+                  'not_in'],
+      plugin: 'selectize',
+      plugin_config: {
+        valueField: 'id',
+        labelField: 'name',
+        searchField: 'name',
+        sortField: 'name',
+        options: [
+          <%= @meditems = File.read([Rails.root, '/app/assets/data/', 'D_MEDITEMS.txt'].join) %>
+          <%= puts @meditems %>
+          ]
+      },
+    }
+    ]; // END OF FILTERS ARRAY
+};
+
+getLabeventsFilters = function() {
+  return [
+    /*
+     * LABITEM
+     */
+    {
+      id: 'itemid',
+      label: 'Lab test performed',
+      type: 'string',
+      input: 'select',
+      multiple: true,
+      unique: true,
+      operators: ['in',
+                  'not_in'],
+      plugin: 'selectize',
+      plugin_config: {
+        valueField: 'id',
+        labelField: 'name',
+        searchField: 'name',
+        sortField: 'name',
+        options: [
+          <%= @labitems = File.read([Rails.root, '/app/assets/data/', 'D_LABITEMS.txt'].join) %>
+          <%= puts @labitems %>
+          ]
+      },
+      valueSetter: function(rule, value) {
+        rule.$el.find('.rule-value-container select')[0].selectize.setValue(value);
+      }
+    },
+    /*
+     * LABEVENT (text result)
+     */
+    {
+      id: 'value',
+      label: 'Lab test result (text)',
+      type: 'string',
+      input: 'select',
+      multiple: 'true',
+      unique: 'true',
+      operators: ['in',
+                  'not_in'],
+      plugin: 'selectize',
+      plugin_config: {
+        valueField: 'lab_result',
+        labelField: 'lab_result',
+        create: function(input) {
+          return {
+            lab_result: input
+          };
+        }
+      }
+    },
+    /*
+     * LABEVENT (numeric result)
+     */
+    {
+      id: 'valuenum',
+      label: 'Lab test result (numeric)',
+      type: 'double',
+      size: 5,
+      unique: true,
+      validation: {
+        step: 0.01
+      }
+    }
+    ]; // END OF FILTERS ARRAY
+};
+
+getIcdCodeFilters = function() {
+  return [
+    /*
+     * ICD Codes
+     */
+    {
+      id: 'code',
+      label: 'ICD-9 Code',
+      type: 'string',
+      input: 'select',
+      multiple: 'true',
+      unique: 'true',
+      operators: ['in',
+                  'not_in'],
+      plugin: 'selectize',
+      plugin_config: {
+        valueField: 'icd_code',
+        labelField: 'icd_code',
+        create: function(input) {
+          return {
+            icd_code: input
+          };
+        }
+      }
+    }
+    ];
+};

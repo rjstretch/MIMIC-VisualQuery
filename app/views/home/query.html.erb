@@ -1,0 +1,37 @@
+<div id="query-count">
+<h3>Query Results</h3>
+
+<pre><%= @data.to_sql %></pre>
+
+<pre class="pre-scrollable"><p><b><%= @data.count %> ICU stays</b> met the specified criteria.</p> 
+
+<% if !@distincts.blank? then %>
+Unique counts were as follows:
+<% @distincts.each do |i| %>
+<p class="indented"><b><%= [i[0].pluralize, ': '].join %></b><%= i[1] %></p>
+<% end %>
+<% end %>
+
+<% if !@aggregates.blank? then %>
+Aggregate counts were as follows:
+<% @aggregates.each do |i| %>
+<p class="indented"><b><%= [i[0], ': '].join %></b><%= JSON.pretty_generate(i[1]) %></p>
+<% end %>
+<% end %>
+
+<% if !@averages.blank? then %>
+Averages were as follows:
+<% @averages.each do |i| %>
+<p class="indented"><b><%= [i[0], ': '].join %></b><%= i[1] %></p>
+<% end %>
+<% end %>
+</pre>
+
+<% if !@options.blank? %>
+	<h3>Sample Data<small>&nbsp;&nbsp;&nbsp;Displaying up to <%= @query_limit %> ICU stays</small></h3>
+
+	<% tp.set :max_width, 200 %>
+	<%= tp_pre @data.limit(@query_limit), @options %>
+<% end %>
+
+</div>

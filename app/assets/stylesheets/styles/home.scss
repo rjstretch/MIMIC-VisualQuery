@@ -1,0 +1,22 @@
+// Adjust the loading spinner position
+#loading-animation {
+	margin-top: -30px;
+	margin-left: 100px;
+}
+
+// Adjust the 'Delete' rule button position
+div.rule-actions > button.btn-danger {
+	margin-top: 5px;
+}
+
+#query-count p {
+	margin-bottom: -20px;
+}
+
+#query-count p.indented {
+	margin: 0 0 -20px 20px;
+}
+
+#query-count pre.pre-scrollable {
+	max-height: 600px;
+}

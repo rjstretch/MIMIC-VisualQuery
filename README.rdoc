@@ -1,0 +1,35 @@
+== MIMIC II Query Builder
+
+Explore the MIMIC II database quickly and easily using a visual query builder.
+
+Possible Uses:
+
+* Assess the viability of using MIMIC II to investigate your research question by performing a quick estimate of the number of ICU stays or unique subjects meeting specified criteria
+
+* Rapidly generate statistics regarding historical patient outcomes in specific clinical scenarios
+
+* Learn about the structure and content of MIMIC II through a point-and-click interface.
+
+=== Setup
+
+You will need the following:
+
+* Rails
+
+* Postgres (and the MIMIC II database)
+
+Steps:
+
+* Clone project
+
+* Bundle install
+
+* Add the following environment variables to .bash_profile or similar: 'MIMIC_DATABASE', 'MIMIC_DATABASE_USER', 'MIMIC_DATABASE_PASSWORD' (see /config/database.yml for usage)
+
+* In the Rails console: require 'table_print'
+
+* Start Postgres
+
+* Start the Rails server
+
+* Go to http://localhost:3000
