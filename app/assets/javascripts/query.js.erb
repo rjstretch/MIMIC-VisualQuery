@@ -2,7 +2,8 @@
 // When these files are altered, sprockets will know to recompile the CSS
 // such that it points to the correct copy of the asset.
 //
-//= depend_on_asset "D_LABITEMS.txt"
+//= depend_on_asset "LABITEMS.txt"
+//= depend_on_asset "MEDITEMS.txt"
 
 setupQueryInterface = function() {
   var $b = $('#icustay_detail_builder');
@@ -1041,7 +1042,7 @@ getMedeventsFilters = function() {
         searchField: 'name',
         sortField: 'name',
         options: [
-          <%= @meditems = File.read([Rails.root, '/app/assets/data/', 'D_MEDITEMS.txt'].join) %>
+          <%= @meditems = File.read([Rails.root, '/app/assets/data/', 'MEDITEMS.txt'].join) %>
           <%= puts @meditems %>
           ]
       },
@@ -1070,7 +1071,7 @@ getLabeventsFilters = function() {
         searchField: 'name',
         sortField: 'name',
         options: [
-          <%= @labitems = File.read([Rails.root, '/app/assets/data/', 'D_LABITEMS.txt'].join) %>
+          <%= @labitems = File.read([Rails.root, '/app/assets/data/', 'LABITEMS.txt'].join) %>
           <%= puts @labitems %>
           ]
       },

@@ -10,2208 +10,1131 @@ SET check_function_bodies = false;
 SET client_min_messages = warning;
 
 --
--- Name: mimic2v26; Type: SCHEMA; Schema: -; Owner: -
+-- Name: mimiciii; Type: SCHEMA; Schema: -; Owner: -
 --
 
-CREATE SCHEMA mimic2v26;
+CREATE SCHEMA mimiciii;
 
-
-SET search_path = mimic2v26, pg_catalog;
+SET search_path = mimiciii, pg_catalog;
 
 SET default_tablespace = '';
 
 SET default_with_oids = false;
 
 --
--- Name: a_chartdurations; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE a_chartdurations (
-    subject_id integer NOT NULL,
-    icustay_id integer,
-    itemid integer NOT NULL,
-    elemid integer NOT NULL,
-    starttime timestamp without time zone NOT NULL,
-    startrealtime timestamp without time zone NOT NULL,
-    endtime timestamp without time zone,
-    cuid integer,
-    duration double precision
-);
-
-
---
--- Name: a_iodurations; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE a_iodurations (
-    subject_id integer NOT NULL,
-    icustay_id integer,
-    itemid integer NOT NULL,
-    elemid integer NOT NULL,
-    starttime timestamp without time zone NOT NULL,
-    startrealtime timestamp without time zone,
-    endtime timestamp without time zone,
-    cuid integer,
-    duration double precision
-);
-
-
---
--- Name: a_meddurations; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE a_meddurations (
-    subject_id integer NOT NULL,
-    icustay_id integer,
-    itemid integer NOT NULL,
-    elemid integer NOT NULL,
-    starttime timestamp without time zone NOT NULL,
-    startrealtime timestamp without time zone,
-    endtime timestamp without time zone,
-    cuid integer,
-    duration double precision
-);
-
-
---
--- Name: additives; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE additives (
-    subject_id integer NOT NULL,
-    icustay_id integer,
-    itemid integer NOT NULL,
-    ioitemid integer NOT NULL,
-    charttime timestamp without time zone NOT NULL,
-    elemid integer NOT NULL,
-    cgid integer,
-    cuid integer,
-    amount double precision,
-    doseunits character varying(20),
-    route character varying(20)
-);
-
-
---
--- Name: admissions; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: admissions; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE admissions (
+    row_id bigint NOT NULL,
+    subject_id integer NOT NULL,
     hadm_id integer NOT NULL,
-    subject_id integer NOT NULL,
-    admit_dt timestamp without time zone NOT NULL,
-    disch_dt timestamp without time zone NOT NULL
+    admittime timestamp(0) without time zone NOT NULL,
+    dischtime timestamp(0) without time zone NOT NULL,
+    deathtime timestamp(0) without time zone,
+    admission_type character varying(50) NOT NULL,
+    admission_location character varying(50) NOT NULL,
+    discharge_location character varying(50) NOT NULL,
+    insurance character varying(255) NOT NULL,
+    language character varying(10),
+    religion character varying(50),
+    marital_status character varying(50),
+    ethnicity character varying(200) NOT NULL,
+    diagnosis character varying(300)
 );
 
 
 --
--- Name: censusevents; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: callout; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE TABLE censusevents (
-    census_id integer NOT NULL,
+CREATE TABLE callout (
+    row_id bigint NOT NULL,
     subject_id integer NOT NULL,
-    intime timestamp without time zone NOT NULL,
-    outtime timestamp without time zone NOT NULL,
-    careunit integer,
-    destcareunit integer,
-    dischstatus character varying(20),
-    los double precision,
-    icustay_id integer
+    hadm_id integer NOT NULL,
+    submit_wardid integer,
+    submit_careunit character varying(15),
+    curr_wardid integer,
+    curr_careunit character varying(15),
+    callout_wardid integer,
+    callout_service character varying(10) NOT NULL,
+    request_tele smallint NOT NULL,
+    request_resp smallint NOT NULL,
+    request_cdiff smallint NOT NULL,
+    request_mrsa smallint NOT NULL,
+    request_vre smallint NOT NULL,
+    callout_status character varying(20) NOT NULL,
+    callout_outcome character varying(20) NOT NULL,
+    discharge_wardid integer,
+    acknowledge_status character varying(20) NOT NULL,
+    createtime timestamp(0) without time zone NOT NULL,
+    updatetime timestamp(0) without time zone NOT NULL,
+    acknowledgetime timestamp(0) without time zone,
+    outcometime timestamp(0) without time zone NOT NULL,
+    firstreservationtime timestamp(0) without time zone,
+    currentreservationtime timestamp(0) without time zone
 );
 
 
 --
--- Name: chartevents; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: caregivers; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE TABLE caregivers (
+    row_id bigint NOT NULL,
+    cgid integer NOT NULL,
+    label character varying(50),
+    description character varying(50)
+);
+
+
+--
+-- Name: chartevents; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE chartevents (
+    row_id bigint NOT NULL,
     subject_id integer NOT NULL,
+    hadm_id integer,
     icustay_id integer,
-    itemid integer NOT NULL,
-    charttime timestamp without time zone NOT NULL,
-    elemid integer NOT NULL,
-    realtime timestamp without time zone NOT NULL,
+    itemid integer,
+    charttime timestamp(0) without time zone,
+    storetime timestamp(0) without time zone,
     cgid integer,
-    cuid integer,
-    value1 character varying(110),
-    value1num double precision,
-    value1uom character varying(20),
-    value2 character varying(110),
-    value2num double precision,
-    value2uom character varying(20),
-    resultstatus character varying(20),
-    stopped character varying(20)
+    value character varying(300),
+    valuenum double precision,
+    uom character varying(50),
+    warning integer,
+    error integer,
+    resultstatus character varying(50),
+    stopped character varying(50)
 );
 
 
 --
--- Name: comorbidity_scores; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: cptevents; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE TABLE comorbidity_scores (
+CREATE TABLE cptevents (
+    row_id bigint NOT NULL,
     subject_id integer NOT NULL,
     hadm_id integer NOT NULL,
-    category character(10),
-    congestive_heart_failure double precision,
-    cardiac_arrhythmias double precision,
-    valvular_disease double precision,
-    pulmonary_circulation double precision,
-    peripheral_vascular double precision,
-    hypertension double precision,
-    paralysis double precision,
-    other_neurological double precision,
-    chronic_pulmonary double precision,
-    diabetes_uncomplicated double precision,
-    diabetes_complicated double precision,
-    hypothyroidism double precision,
-    renal_failure double precision,
-    liver_disease double precision,
-    peptic_ulcer double precision,
-    aids double precision,
-    lymphoma double precision,
-    metastatic_cancer double precision,
-    solid_tumor double precision,
-    rheumatoid_arthritis double precision,
-    coagulopathy double precision,
-    obesity double precision,
-    weight_loss double precision,
-    fluid_electrolyte double precision,
-    blood_loss_anemia double precision,
-    deficiency_anemias double precision,
-    alcohol_abuse double precision,
-    drug_abuse double precision,
-    psychoses double precision,
-    depression double precision
+    costcenter character varying(10) NOT NULL,
+    chartdate timestamp(0) without time zone,
+    cpt_cd character varying(10) NOT NULL,
+    cpt_number integer,
+    cpt_suffix character varying(5),
+    ticket_id_seq integer,
+    sectionheader character varying(50),
+    subsectionheader character varying(300),
+    description character varying(200)
 );
 
 
 --
--- Name: d_caregivers; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: d_cpt; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE TABLE d_caregivers (
-    cgid integer NOT NULL,
-    label character varying(6)
+CREATE TABLE d_cpt (
+    row_id bigint NOT NULL,
+    category smallint NOT NULL,
+    sectionrange character varying(100) NOT NULL,
+    sectionheader character varying(50) NOT NULL,
+    subsectionrange character varying(100) NOT NULL,
+    subsectionheader character varying(300) NOT NULL,
+    codesuffix character varying(5),
+    mincodeinsubsection integer NOT NULL,
+    maxcodeinsubsection integer NOT NULL
 );
 
 
 --
--- Name: d_careunits; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: d_icd_diagnoses; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE TABLE d_careunits (
-    cuid integer NOT NULL,
-    label character varying(20)
+CREATE TABLE d_icd_diagnoses (
+    row_id integer NOT NULL,
+    icd9_code character varying(10) NOT NULL,
+    short_title character varying(50) NOT NULL,
+    long_title character varying(300) NOT NULL
 );
 
+--
+-- Name: d_icd_procedures; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE TABLE d_icd_procedures (
+    row_id integer NOT NULL,
+    icd9_code character varying(10) NOT NULL,
+    short_title character varying(50) NOT NULL,
+    long_title character varying(300) NOT NULL
+);
 
 --
--- Name: d_chartitems; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: d_items; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE TABLE d_chartitems (
+CREATE TABLE d_items (
+    row_id bigint NOT NULL,
     itemid integer NOT NULL,
-    label character varying(110),
-    category character varying(50),
-    description character varying(255)
+    label character varying(200),
+    abbreviation character varying(100),
+    dbsource character varying(20),
+    linksto character varying(50),
+    code character varying(20),
+    category character varying(100),
+    unitname character varying(100),
+    param_type character varying(30),
+    lownormalvalue double precision,
+    highnormalvalue double precision
 );
 
-
 --
--- Name: d_chartitems_detail; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE d_chartitems_detail (
-    label character varying(110),
-    label_lower character varying(110),
-    itemid integer,
-    category character varying(50),
-    description character varying(255),
-    value_type character(1),
-    value_column character varying(6),
-    rows_num double precision,
-    subjects_num double precision,
-    chart_vs_realtime_delay_mean double precision,
-    chart_vs_realtime_delay_stddev double precision,
-    value1_uom_num double precision,
-    value1_uom_has_nulls character(1),
-    value1_uom_sample1 character varying(20),
-    value1_uom_sample2 character varying(20),
-    value1_distinct_num double precision,
-    value1_has_nulls character(1),
-    value1_sample1 character varying(110),
-    value1_sample2 character varying(110),
-    value1_length_min double precision,
-    value1_length_max double precision,
-    value1_length_mean double precision,
-    value1num_min double precision,
-    value1num_max double precision,
-    value1num_mean double precision,
-    value1num_stddev double precision,
-    value2_uom_num double precision,
-    value2_uom_has_nulls character(1),
-    value2_uom_sample1 character varying(20),
-    value2_uom_sample2 character varying(20),
-    value2_distinct_num double precision,
-    value2_has_nulls character(1),
-    value2_sample1 character varying(110),
-    value2_sample2 character varying(110),
-    value2_length_min double precision,
-    value2_length_max double precision,
-    value2_length_mean double precision,
-    value2num_min double precision,
-    value2num_max double precision,
-    value2num_mean double precision,
-    value2num_stddev double precision
-);
-
-
---
--- Name: d_codeditems; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE d_codeditems (
-    itemid integer NOT NULL,
-    code character varying(10),
-    type character varying(12),
-    category character varying(13),
-    label character varying(100),
-    description character varying(100)
-);
-
-
---
--- Name: d_demographicitems; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE d_demographicitems (
-    itemid integer NOT NULL,
-    label character varying(50),
-    category character varying(19)
-);
-
-
---
--- Name: d_ioitems; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE d_ioitems (
-    itemid integer NOT NULL,
-    label character varying(600),
-    category character varying(50)
-);
-
-
---
--- Name: d_labitems; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: d_labitems; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE d_labitems (
+    row_id bigint NOT NULL,
     itemid integer NOT NULL,
-    test_name character varying(50) NOT NULL,
-    fluid character varying(50) NOT NULL,
-    category character varying(50) NOT NULL,
-    loinc_code character varying(7),
-    loinc_description character varying(100)
+    label character varying(100) NOT NULL,
+    fluid character varying(100) NOT NULL,
+    category character varying(100) NOT NULL,
+    loinc_code character varying(100)
 );
 
-
 --
--- Name: d_meditems; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE d_meditems (
-    itemid integer NOT NULL,
-    label character varying(20)
-);
-
-
---
--- Name: d_parammap_items; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: datetimeevents; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE TABLE d_parammap_items (
-    category character varying(50) NOT NULL,
-    description character varying(500)
-);
-
-
---
--- Name: d_patients; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE d_patients (
+CREATE TABLE datetimeevents (
+    row_id bigint NOT NULL,
     subject_id integer NOT NULL,
-    sex character varying(1),
-    dob timestamp without time zone NOT NULL,
-    dod timestamp without time zone,
-    hospital_expire_flg character varying(1) DEFAULT 'N'::character varying
-);
-
-
---
--- Name: db_schema; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE db_schema (
-    created_dt timestamp without time zone DEFAULT ('now'::text)::timestamp without time zone,
-    created_by character varying(15) DEFAULT "current_user"(),
-    updated_dt timestamp without time zone DEFAULT ('now'::text)::timestamp without time zone,
-    updated_by character varying(15) DEFAULT "current_user"(),
-    schema_dt timestamp without time zone DEFAULT ('now'::text)::timestamp without time zone,
-    version character varying(25) NOT NULL,
-    comments character varying(250)
-);
-
-
---
--- Name: deliveries; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE deliveries (
-    subject_id integer NOT NULL,
-    icustay_id integer,
-    ioitemid integer NOT NULL,
-    charttime timestamp without time zone NOT NULL,
-    elemid integer NOT NULL,
-    cgid integer,
-    cuid integer,
-    site character varying(20),
-    rate double precision,
-    rateuom character varying(20) NOT NULL
-);
-
-
---
--- Name: demographic_detail; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE demographic_detail (
-    subject_id integer NOT NULL,
-    hadm_id integer NOT NULL,
-    marital_status_itemid integer,
-    marital_status_descr character varying(50),
-    ethnicity_itemid integer,
-    ethnicity_descr character varying(50),
-    overall_payor_group_itemid integer,
-    overall_payor_group_descr character varying(50),
-    religion_itemid integer,
-    religion_descr character varying(50),
-    admission_type_itemid integer,
-    admission_type_descr character varying(50),
-    admission_source_itemid integer,
-    admission_source_descr character varying(50)
-);
-
-
---
--- Name: demographicevents; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE demographicevents (
-    subject_id integer NOT NULL,
-    hadm_id integer NOT NULL,
-    itemid integer NOT NULL
-);
-
-
---
--- Name: drgevents; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE drgevents (
-    subject_id integer NOT NULL,
-    hadm_id integer NOT NULL,
-    itemid integer NOT NULL,
-    cost_weight double precision
-);
-
-
---
--- Name: icd9; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE icd9 (
-    subject_id integer NOT NULL,
-    hadm_id integer NOT NULL,
-    sequence integer NOT NULL,
-    code character varying(100) NOT NULL,
-    description character varying(255)
-);
-
-
---
--- Name: icustay_days; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE icustay_days (
-    icustay_id integer,
-    subject_id integer,
-    seq integer,
-    begintime timestamp without time zone,
-    endtime timestamp without time zone,
-    first_day_flg character(1),
-    last_day_flg character(1)
-);
-
-
---
--- Name: icustay_detail; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE icustay_detail (
-    icustay_id integer,
-    subject_id integer,
-    gender character varying(1),
-    dob timestamp without time zone NOT NULL,
-    dod timestamp without time zone,
-    expire_flg character varying(1),
-    subject_icustay_total_num double precision,
-    subject_icustay_seq double precision,
     hadm_id integer,
-    hospital_total_num double precision,
-    hospital_seq double precision,
-    hospital_first_flg character(1),
-    hospital_last_flg character(1),
-    hospital_admit_dt timestamp without time zone,
-    hospital_disch_dt timestamp without time zone,
-    hospital_los double precision,
-    hospital_expire_flg character(1),
-    icustay_total_num double precision,
-    icustay_seq double precision,
-    icustay_first_flg character(1),
-    icustay_last_flg character(1),
-    icustay_intime timestamp without time zone NOT NULL,
-    icustay_outtime timestamp without time zone NOT NULL,
-    icustay_admit_age double precision,
-    icustay_age_group character varying(7),
-    icustay_los double precision NOT NULL,
-    icustay_expire_flg character(1),
-    icustay_first_careunit character varying(20),
-    icustay_last_careunit character varying(20),
-    icustay_first_service character varying(110),
-    icustay_last_service character varying(110),
-    height double precision,
-    weight_first double precision,
-    weight_min double precision,
-    weight_max double precision,
-    sapsi_first double precision,
-    sapsi_min double precision,
-    sapsi_max double precision,
-    sofa_first double precision,
-    sofa_min double precision,
-    sofa_max double precision,
-    matched_waveforms_num double precision,
-    census_micu integer,
-    census_csru integer,
-    census_ccu integer,
-    census_ficu integer,
-    census_sicu integer,
-    boarders_in_micu integer,
-    micu_pts_in_micu integer
+    icustay_id integer,
+    itemid integer NOT NULL,
+    charttime timestamp(0) without time zone NOT NULL,
+    storetime timestamp(0) without time zone NOT NULL,
+    cgid integer NOT NULL,
+    value timestamp(0) without time zone,
+    uom character varying(50) NOT NULL,
+    warning smallint,
+    error smallint,
+    resultstatus character varying(50),
+    stopped character varying(50)
 );
 
+--
+-- Name: diagnoses_icd; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE TABLE diagnoses_icd (
+    row_id bigint NOT NULL,
+    subject_id integer NOT NULL,
+    hadm_id integer NOT NULL,
+    sequence integer,
+    icd9_code character varying(20),
+    description character varying(50)
+);
 
 --
--- Name: icustayevents; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: drgcodes; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE TABLE drgcodes (
+    row_id bigint NOT NULL,
+    subject_id integer NOT NULL,
+    hadm_id integer NOT NULL,
+    drg_type character varying(20) NOT NULL,
+    drg_code character varying(20) NOT NULL,
+    description character varying(300),
+    drg_severity smallint,
+    drg_mortality smallint
+);
+
+--
+-- Name: icustayevents; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE icustayevents (
-    icustay_id integer NOT NULL,
+    row_id bigint NOT NULL,
     subject_id integer NOT NULL,
-    intime timestamp without time zone NOT NULL,
-    outtime timestamp without time zone NOT NULL,
-    los double precision NOT NULL,
-    first_careunit integer,
-    last_careunit integer
+    hadm_id integer NOT NULL,
+    icustay_id integer NOT NULL,
+    dbsource character varying(20) NOT NULL,
+    first_careunit character varying(20) NOT NULL,
+    last_careunit character varying(20) NOT NULL,
+    first_wardid smallint NOT NULL,
+    last_wardid smallint NOT NULL,
+    intime timestamp(0) without time zone NOT NULL,
+    outtime timestamp(0) without time zone,
+    los double precision
 );
 
-
 --
--- Name: ioevents; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: ioevents; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE ioevents (
+    row_id bigint NOT NULL,
     subject_id integer NOT NULL,
+    hadm_id integer,
     icustay_id integer,
-    itemid integer NOT NULL,
-    charttime timestamp without time zone NOT NULL,
-    elemid integer NOT NULL,
-    altid integer,
-    realtime timestamp without time zone,
-    cgid integer,
-    cuid integer,
+    starttime timestamp(0) without time zone,
+    endtime timestamp(0) without time zone,
+    itemid integer,
     volume double precision,
-    volumeuom character varying(20),
-    unitshung double precision,
-    unitshunguom character varying(20),
-    newbottle double precision,
-    stopped character varying(20),
-    estimate character varying(20)
+    volumeuom character varying(30),
+    rate double precision,
+    rateuom character varying(30),
+    storetime timestamp(0) without time zone,
+    cgid bigint,
+    orderid bigint,
+    linkorderid bigint,
+    ordercategoryname character varying(100),
+    secondaryordercategoryname character varying(100),
+    ordercomponenttypedescription character varying(200),
+    ordercategorydescription character varying(50),
+    patientweight double precision,
+    totalvolume double precision,
+    totalvolumeuom character varying(50),
+    statusdescription character varying(30),
+    stopped character varying(30),
+    newbottle integer,
+    isopenbag smallint,
+    continueinnextdept smallint,
+    cancelreason smallint,
+    comments_status character varying(30),
+    comments_title character varying(100),
+    comments_date timestamp(0) without time zone,
+    originalcharttime timestamp(0) without time zone,
+    originalamount double precision,
+    originalamountuom character varying(30),
+    originalroute character varying(30),
+    originalrate double precision,
+    originalrateuom character varying(30),
+    originalsite character varying(30)
 );
 
-
 --
--- Name: labevents; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: labevents; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE labevents (
+    row_id bigint NOT NULL,
     subject_id integer NOT NULL,
     hadm_id integer,
-    icustay_id integer,
     itemid integer NOT NULL,
-    charttime timestamp without time zone NOT NULL,
-    value character varying(100),
+    charttime timestamp(0) without time zone,
+    value character varying(200),
     valuenum double precision,
-    flag character varying(10),
-    valueuom character varying(10)
+    uom character varying(20),
+    flag character varying(20)
 );
 
-
 --
--- Name: medevents; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE medevents (
-    subject_id integer NOT NULL,
-    icustay_id integer,
-    itemid integer NOT NULL,
-    charttime timestamp without time zone NOT NULL,
-    elemid integer NOT NULL,
-    realtime timestamp without time zone NOT NULL,
-    cgid integer,
-    cuid integer,
-    volume double precision,
-    dose double precision,
-    doseuom character varying(20),
-    solutionid integer,
-    solvolume double precision,
-    solunits character varying(20),
-    route character varying(20),
-    stopped character varying(20)
-);
-
-
---
--- Name: microbiologyevents; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: microbiologyevents; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE microbiologyevents (
-    subject_id integer,
+    row_id bigint NOT NULL,
+    subject_id integer NOT NULL,
     hadm_id integer,
-    charttime timestamp without time zone,
+    chartdate timestamp(0) without time zone,
+    charttime timestamp(0) without time zone,
     spec_itemid integer,
+    spec_type_cd character varying(10),
+    spec_type_desc character varying(100),
     org_itemid integer,
-    isolate_num double precision,
+    org_cd integer,
+    org_name character varying(100),
+    isolate_num smallint,
     ab_itemid integer,
-    dilution_amount character varying(72),
-    dilution_comparison character varying(10),
-    interpretation character varying(1)
+    ab_cd integer,
+    ab_name character varying(30),
+    dilution_text character varying(10),
+    dilution_comparison character varying(20),
+    dilution_value double precision,
+    interpretation character varying(5)
 );
 
-
 --
--- Name: noteevents; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: noteevents; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE noteevents (
+    row_id bigint NOT NULL,
+    record_id integer NOT NULL,
     subject_id integer NOT NULL,
     hadm_id integer,
-    icustay_id integer,
-    elemid integer,
-    charttime timestamp without time zone NOT NULL,
-    realtime timestamp without time zone,
+    chartdate timestamp(0) without time zone,
+    category character varying(50),
+    description character varying(300),
     cgid integer,
-    correction character(1),
-    cuid integer,
-    category character varying(26),
-    title character varying(255),
-    text text,
-    exam_name character varying(100),
-    patient_info character varying(4000)
+    iserror character(1),
+    text text
 );
 
-
 --
--- Name: parameter_mapping; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: patients; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE TABLE parameter_mapping (
-    param1_str character varying(50),
-    param1_num double precision,
-    category character varying(50) NOT NULL,
-    param2_str character varying(50),
-    param2_num double precision,
-    order_num double precision,
-    valid_flg character(1) NOT NULL,
-    comments character varying(255)
+CREATE TABLE patients (
+    row_id bigint NOT NULL,
+    subject_id integer NOT NULL,
+    gender character varying(5) NOT NULL,
+    dob timestamp(0) without time zone NOT NULL,
+    dod timestamp(0) without time zone,
+    dod_hosp timestamp(0) without time zone,
+    dod_ssn timestamp(0) without time zone,
+    hospital_expire_flag character varying(5) NOT NULL
 );
 
-
 --
--- Name: poe_med; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: prescriptions; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE TABLE poe_med (
-    poe_id bigint NOT NULL,
-    drug_type character varying(20) NOT NULL,
-    drug_name character varying(100) NOT NULL,
+CREATE TABLE prescriptions (
+    row_id bigint NOT NULL,
+    subject_id integer NOT NULL,
+    hadm_id integer NOT NULL,
+    icustay_id integer,
+    starttime timestamp(0) without time zone,
+    endtime timestamp(0) without time zone,
+    drug_type character varying(100) NOT NULL,
+    drug character varying(100) NOT NULL,
+    drug_name_poe character varying(100),
     drug_name_generic character varying(100),
-    prod_strength character varying(255),
-    form_rx character varying(25),
-    dose_val_rx character varying(100),
-    dose_unit_rx character varying(50),
-    form_val_disp character varying(50),
-    form_unit_disp character varying(50),
-    dose_val_disp double precision,
-    dose_unit_disp character varying(50),
-    dose_range_override character varying(2000)
+    formulary_drug_cd character varying(120),
+    gsn character varying(200),
+    ndc character varying(120),
+    prod_strength character varying(120),
+    dose_val_rx character varying(120),
+    dose_unit_rx character varying(120),
+    form_val_disp character varying(120),
+    form_unit_disp character varying(120),
+    route character varying(120)
 );
 
+--
+-- Name: procedures_icd; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE TABLE procedures_icd (
+    row_id bigint NOT NULL,
+    subject_id integer NOT NULL,
+    hadm_id integer NOT NULL,
+    proc_seq_num integer NOT NULL,
+    icd9_code character varying(20) NOT NULL
+);
 
 --
--- Name: poe_order; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: services; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE TABLE poe_order (
-    poe_id bigint NOT NULL,
+CREATE TABLE services (
+    row_id bigint NOT NULL,
+    subject_id integer NOT NULL,
+    hadm_id integer NOT NULL,
+    transfertime timestamp(0) without time zone NOT NULL,
+    prev_service character varying(20),
+    curr_service character varying(20)
+);
+
+--
+-- Name: transfers; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE TABLE transfers (
+    row_id bigint NOT NULL,
     subject_id integer NOT NULL,
     hadm_id integer NOT NULL,
     icustay_id integer,
-    start_dt timestamp without time zone,
-    stop_dt timestamp without time zone,
-    enter_dt timestamp without time zone NOT NULL,
-    medication character varying(255),
-    procedure_type character varying(50),
-    status character varying(50),
-    route character varying(50),
-    frequency character varying(50),
-    dispense_sched character varying(255),
-    iv_fluid character varying(255),
-    iv_rate character varying(100),
-    infusion_type character varying(15),
-    sliding_scale character(1),
-    doses_per_24hrs double precision,
-    duration double precision,
-    duration_intvl character varying(15),
-    expiration_val double precision,
-    expiration_unit character varying(50),
-    expiration_dt timestamp without time zone,
-    label_instr character varying(1000),
-    additional_instr character varying(1000),
-    md_add_instr character varying(4000),
-    rnurse_add_instr character varying(1000)
+    dbsource character varying(20) NOT NULL,
+    eventtype character varying(20),
+    prev_careunit character varying(20),
+    curr_careunit character varying(20),
+    prev_wardid smallint,
+    curr_wardid smallint,
+    intime timestamp(0) without time zone,
+    outtime timestamp(0) without time zone,
+    los double precision
 );
 
-
 --
--- Name: procedureevents; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE procedureevents (
-    subject_id integer NOT NULL,
-    hadm_id integer NOT NULL,
-    itemid integer,
-    sequence_num integer NOT NULL,
-    proc_dt timestamp without time zone
-);
-
-
---
--- Name: schema_migrations; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE schema_migrations (
-    version character varying NOT NULL
-);
-
-
---
--- Name: totalbalevents; Type: TABLE; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE TABLE totalbalevents (
-    subject_id integer NOT NULL,
-    icustay_id integer,
-    itemid integer NOT NULL,
-    charttime timestamp without time zone NOT NULL,
-    elemid integer NOT NULL,
-    realtime timestamp without time zone NOT NULL,
-    cgid integer,
-    cuid integer,
-    pervolume double precision,
-    cumvolume double precision,
-    accumperiod character varying(20),
-    approx character varying(20),
-    reset double precision,
-    stopped character varying(20)
-);
-
-
---
--- Name: admissions_pkey; Type: CONSTRAINT; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: adm_hadm_unique; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY admissions
-    ADD CONSTRAINT admissions_pkey PRIMARY KEY (hadm_id);
+    ADD CONSTRAINT adm_hadm_unique UNIQUE (hadm_id);
 
 
 --
--- Name: censusevents_pkey; Type: CONSTRAINT; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: adm_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-ALTER TABLE ONLY censusevents
-    ADD CONSTRAINT censusevents_pkey PRIMARY KEY (census_id);
-
-
---
--- Name: d_caregivers_pkey; Type: CONSTRAINT; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-ALTER TABLE ONLY d_caregivers
-    ADD CONSTRAINT d_caregivers_pkey PRIMARY KEY (cgid);
+ALTER TABLE ONLY admissions
+    ADD CONSTRAINT adm_rowid_pk PRIMARY KEY (row_id);
 
 
 --
--- Name: d_careunits_pkey; Type: CONSTRAINT; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: callout_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-ALTER TABLE ONLY d_careunits
-    ADD CONSTRAINT d_careunits_pkey PRIMARY KEY (cuid);
-
-
---
--- Name: d_chartitems_pkey; Type: CONSTRAINT; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-ALTER TABLE ONLY d_chartitems
-    ADD CONSTRAINT d_chartitems_pkey PRIMARY KEY (itemid);
+ALTER TABLE ONLY callout
+    ADD CONSTRAINT callout_rowid_pk PRIMARY KEY (row_id);
 
 
 --
--- Name: d_codeditems_pkey; Type: CONSTRAINT; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: cg_cgid_unique; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-ALTER TABLE ONLY d_codeditems
-    ADD CONSTRAINT d_codeditems_pkey PRIMARY KEY (itemid);
-
-
---
--- Name: d_demographicitems_pkey; Type: CONSTRAINT; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-ALTER TABLE ONLY d_demographicitems
-    ADD CONSTRAINT d_demographicitems_pkey PRIMARY KEY (itemid);
+ALTER TABLE ONLY caregivers
+    ADD CONSTRAINT cg_cgid_unique UNIQUE (cgid);
 
 
 --
--- Name: d_ioitems_pkey; Type: CONSTRAINT; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: cg_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-ALTER TABLE ONLY d_ioitems
-    ADD CONSTRAINT d_ioitems_pkey PRIMARY KEY (itemid);
+ALTER TABLE ONLY caregivers
+    ADD CONSTRAINT cg_rowid_pk PRIMARY KEY (row_id);
 
 
 --
--- Name: d_labitems_pkey; Type: CONSTRAINT; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: chartevents_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY chartevents
+    ADD CONSTRAINT chartevents_rowid_pk PRIMARY KEY (row_id);
+
+
+--
+-- Name: cpt_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY cptevents
+    ADD CONSTRAINT cpt_rowid_pk PRIMARY KEY (row_id);
+
+
+--
+-- Name: d_icd_diag_code_unique; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY d_icd_diagnoses
+    ADD CONSTRAINT d_icd_diag_code_unique UNIQUE (icd9_code);
+
+
+--
+-- Name: d_icd_diag_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY d_icd_diagnoses
+    ADD CONSTRAINT d_icd_diag_rowid_pk PRIMARY KEY (row_id);
+
+
+--
+-- Name: d_icd_proc_code_unique; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY d_icd_procedures
+    ADD CONSTRAINT d_icd_proc_code_unique UNIQUE (icd9_code);
+
+
+--
+-- Name: d_icd_proc_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY d_icd_procedures
+    ADD CONSTRAINT d_icd_proc_rowid_pk PRIMARY KEY (row_id);
+
+
+--
+-- Name: datetime_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY datetimeevents
+    ADD CONSTRAINT datetime_rowid_pk PRIMARY KEY (row_id);
+
+
+--
+-- Name: dcpt_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY d_cpt
+    ADD CONSTRAINT dcpt_rowid_pk PRIMARY KEY (row_id);
+
+
+--
+-- Name: dcpt_ssrange_unique; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY d_cpt
+    ADD CONSTRAINT dcpt_ssrange_unique UNIQUE (subsectionrange);
+
+
+--
+-- Name: diagnosesicd_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY diagnoses_icd
+    ADD CONSTRAINT diagnosesicd_rowid_pk PRIMARY KEY (row_id);
+
+
+--
+-- Name: ditems_itemid_unique; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY d_items
+    ADD CONSTRAINT ditems_itemid_unique UNIQUE (itemid);
+
+
+--
+-- Name: ditems_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY d_items
+    ADD CONSTRAINT ditems_rowid_pk PRIMARY KEY (row_id);
+
+
+--
+-- Name: dlabitems_itemid_unique; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY d_labitems
-    ADD CONSTRAINT d_labitems_pkey PRIMARY KEY (itemid);
+    ADD CONSTRAINT dlabitems_itemid_unique UNIQUE (itemid);
 
 
 --
--- Name: d_meditems_pkey; Type: CONSTRAINT; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: dlabitems_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-ALTER TABLE ONLY d_meditems
-    ADD CONSTRAINT d_meditems_pkey PRIMARY KEY (itemid);
-
-
---
--- Name: d_patients_pkey; Type: CONSTRAINT; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-ALTER TABLE ONLY d_patients
-    ADD CONSTRAINT d_patients_pkey PRIMARY KEY (subject_id);
+ALTER TABLE ONLY d_labitems
+    ADD CONSTRAINT dlabitems_rowid_pk PRIMARY KEY (row_id);
 
 
 --
--- Name: demographicevents_pkey; Type: CONSTRAINT; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: drg_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-ALTER TABLE ONLY demographicevents
-    ADD CONSTRAINT demographicevents_pkey PRIMARY KEY (subject_id, hadm_id, itemid);
-
-
---
--- Name: drgevents_pkey; Type: CONSTRAINT; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-ALTER TABLE ONLY drgevents
-    ADD CONSTRAINT drgevents_pkey PRIMARY KEY (subject_id, hadm_id, itemid);
+ALTER TABLE ONLY drgcodes
+    ADD CONSTRAINT drg_rowid_pk PRIMARY KEY (row_id);
 
 
 --
--- Name: icustayevents_pkey; Type: CONSTRAINT; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: icustay_icustayid_unique; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY icustayevents
-    ADD CONSTRAINT icustayevents_pkey PRIMARY KEY (icustay_id);
+    ADD CONSTRAINT icustay_icustayid_unique UNIQUE (icustay_id);
 
 
 --
--- Name: poe_order_pkey; Type: CONSTRAINT; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: icustay_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-ALTER TABLE ONLY poe_order
-    ADD CONSTRAINT poe_order_pkey PRIMARY KEY (poe_id);
+ALTER TABLE ONLY icustayevents
+    ADD CONSTRAINT icustay_rowid_pk PRIMARY KEY (row_id);
 
 
 --
--- Name: procedureevents_pkey; Type: CONSTRAINT; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: ioevents_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-ALTER TABLE ONLY procedureevents
-    ADD CONSTRAINT procedureevents_pkey PRIMARY KEY (subject_id, hadm_id, sequence_num);
+ALTER TABLE ONLY ioevents
+    ADD CONSTRAINT ioevents_rowid_pk PRIMARY KEY (row_id);
 
 
 --
--- Name: a_chartdurations_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: labevents_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX a_chartdurations_o1 ON a_chartdurations USING btree (cuid);
+ALTER TABLE ONLY labevents
+    ADD CONSTRAINT labevents_rowid_pk PRIMARY KEY (row_id);
 
 
 --
--- Name: a_chartdurations_o2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: micro_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX a_chartdurations_o2 ON a_chartdurations USING btree (subject_id);
+ALTER TABLE ONLY microbiologyevents
+    ADD CONSTRAINT micro_rowid_pk PRIMARY KEY (row_id);
 
 
 --
--- Name: a_chartdurations_o3; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: noteevents_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX a_chartdurations_o3 ON a_chartdurations USING btree (icustay_id);
+ALTER TABLE ONLY noteevents
+    ADD CONSTRAINT noteevents_rowid_pk PRIMARY KEY (row_id);
 
 
 --
--- Name: a_chartdurations_o4; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: pat_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX a_chartdurations_o4 ON a_chartdurations USING btree (itemid);
+ALTER TABLE ONLY patients
+    ADD CONSTRAINT pat_rowid_pk PRIMARY KEY (row_id);
 
 
 --
--- Name: a_iodurations_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: pat_subid_unique; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX a_iodurations_o1 ON a_iodurations USING btree (cuid);
+ALTER TABLE ONLY patients
+    ADD CONSTRAINT pat_subid_unique UNIQUE (subject_id);
 
 
 --
--- Name: a_iodurations_o2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: prescription_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX a_iodurations_o2 ON a_iodurations USING btree (subject_id);
+ALTER TABLE ONLY prescriptions
+    ADD CONSTRAINT prescription_rowid_pk PRIMARY KEY (row_id);
 
 
 --
--- Name: a_iodurations_o3; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: proceduresicd_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX a_iodurations_o3 ON a_iodurations USING btree (itemid);
+ALTER TABLE ONLY procedures_icd
+    ADD CONSTRAINT proceduresicd_rowid_pk PRIMARY KEY (row_id);
 
 
 --
--- Name: a_iodurations_pk; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: services_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE UNIQUE INDEX a_iodurations_pk ON a_iodurations USING btree (subject_id, itemid, elemid, starttime);
+ALTER TABLE ONLY services
+    ADD CONSTRAINT services_rowid_pk PRIMARY KEY (row_id);
 
 
 --
--- Name: a_meddurations_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: transfers_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX a_meddurations_o1 ON a_meddurations USING btree (cuid);
+ALTER TABLE ONLY transfers
+    ADD CONSTRAINT transfers_rowid_pk PRIMARY KEY (row_id);
 
 
 --
--- Name: a_meddurations_o2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: admissions_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX a_meddurations_o2 ON a_meddurations USING btree (subject_id);
+CREATE INDEX admissions_idx01 ON admissions USING btree (subject_id, hadm_id);
 
 
 --
--- Name: a_meddurations_o3; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: admissions_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX a_meddurations_o3 ON a_meddurations USING btree (itemid);
+CREATE INDEX admissions_idx02 ON admissions USING btree (admittime, dischtime, deathtime);
 
 
 --
--- Name: a_meddurations_o4; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: admissions_idx03; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX a_meddurations_o4 ON a_meddurations USING btree (icustay_id);
+CREATE INDEX admissions_idx03 ON admissions USING btree (admission_type);
 
 
 --
--- Name: a_meddurations_pk; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: callout_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE UNIQUE INDEX a_meddurations_pk ON a_meddurations USING btree (subject_id, itemid, elemid, starttime);
+CREATE INDEX callout_idx01 ON callout USING btree (subject_id, hadm_id);
 
 
 --
--- Name: additives_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: callout_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX additives_o1 ON additives USING btree (cuid);
+CREATE INDEX callout_idx02 ON callout USING btree (curr_careunit);
 
 
 --
--- Name: additives_o2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: callout_idx03; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX additives_o2 ON additives USING btree (subject_id);
+CREATE INDEX callout_idx03 ON callout USING btree (callout_service);
 
 
 --
--- Name: additives_o3; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: callout_idx04; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX additives_o3 ON additives USING btree (ioitemid);
+CREATE INDEX callout_idx04 ON callout USING btree (curr_wardid, callout_wardid, discharge_wardid);
 
 
 --
--- Name: additives_o4; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: callout_idx05; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX additives_o4 ON additives USING btree (itemid);
+CREATE INDEX callout_idx05 ON callout USING btree (callout_status, callout_outcome);
 
 
 --
--- Name: additives_o5; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: callout_idx06; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX additives_o5 ON additives USING btree (icustay_id);
+CREATE INDEX callout_idx06 ON callout USING btree (createtime, updatetime, acknowledgetime, outcometime);
 
 
 --
--- Name: additives_o6; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: caregivers_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX additives_o6 ON additives USING btree (cgid);
+CREATE INDEX caregivers_idx01 ON caregivers USING btree (cgid, label);
 
 
 --
--- Name: admissions_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: chartevents_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX admissions_o1 ON admissions USING btree (subject_id);
+CREATE INDEX chartevents_idx01 ON chartevents USING btree (subject_id, hadm_id, icustay_id) WITH (fillfactor=100);
 
 
 --
--- Name: censusevents_01; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: chartevents_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX censusevents_01 ON censusevents USING btree (destcareunit);
+CREATE INDEX chartevents_idx02 ON chartevents USING btree (itemid) WITH (fillfactor=100);
 
 
 --
--- Name: censusevents_o2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: chartevents_idx03; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX censusevents_o2 ON censusevents USING btree (subject_id);
+CREATE INDEX chartevents_idx03 ON chartevents USING btree (charttime, storetime) WITH (fillfactor=100);
 
 
 --
--- Name: censusevents_o3; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
+-- Name: chartevents_idx04; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX censusevents_o3 ON censusevents USING btree (icustay_id);
+CREATE INDEX chartevents_idx04 ON chartevents USING btree (cgid) WITH (fillfactor=100);
 
 
 --
--- Name: censusevents_o4; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX censusevents_o4 ON censusevents USING btree (careunit);
-
-
---
--- Name: censusevents_u1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX censusevents_u1 ON censusevents USING btree (subject_id, intime);
-
-
---
--- Name: chartevents_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX chartevents_o1 ON chartevents USING btree (cuid);
-
-
---
--- Name: chartevents_o2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX chartevents_o2 ON chartevents USING btree (subject_id, itemid);
-
-
---
--- Name: chartevents_o3; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX chartevents_o3 ON chartevents USING btree (subject_id);
-
-
---
--- Name: chartevents_o4; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX chartevents_o4 ON chartevents USING btree (itemid);
-
-
---
--- Name: chartevents_o5; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX chartevents_o5 ON chartevents USING btree (icustay_id);
-
-
---
--- Name: chartevents_o6; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX chartevents_o6 ON chartevents USING btree (charttime);
-
-
---
--- Name: chartevents_o7; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX chartevents_o7 ON chartevents USING btree (cgid);
-
-
---
--- Name: comorbidity_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX comorbidity_o1 ON comorbidity_scores USING btree (subject_id);
-
-
---
--- Name: comorbidity_o2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX comorbidity_o2 ON comorbidity_scores USING btree (hadm_id);
-
-
---
--- Name: comorbidity_o3; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX comorbidity_o3 ON comorbidity_scores USING btree (subject_id, hadm_id);
-
-
---
--- Name: d_chartitems_detail_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX d_chartitems_detail_o1 ON d_chartitems_detail USING btree (label_lower);
-
-
---
--- Name: d_chartitems_detail_u1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE UNIQUE INDEX d_chartitems_detail_u1 ON d_chartitems_detail USING btree (itemid);
-
-
---
--- Name: d_chartitems_detail_u2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE UNIQUE INDEX d_chartitems_detail_u2 ON d_chartitems_detail USING btree (itemid, label, label_lower, category);
-
-
---
--- Name: deliveries_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX deliveries_o1 ON deliveries USING btree (cuid);
-
-
---
--- Name: deliveries_o2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX deliveries_o2 ON deliveries USING btree (subject_id);
-
-
---
--- Name: deliveries_o3; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX deliveries_o3 ON deliveries USING btree (ioitemid);
-
-
---
--- Name: deliveries_o4; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX deliveries_o4 ON deliveries USING btree (icustay_id);
-
-
---
--- Name: deliveries_o5; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX deliveries_o5 ON deliveries USING btree (cgid);
-
-
---
--- Name: deliveries_pk; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE UNIQUE INDEX deliveries_pk ON deliveries USING btree (subject_id, ioitemid, charttime, elemid);
-
-
---
--- Name: demographicevents_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX demographicevents_o1 ON demographicevents USING btree (hadm_id);
-
-
---
--- Name: demographicevents_o2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX demographicevents_o2 ON demographicevents USING btree (itemid);
-
-
---
--- Name: drgevents_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX drgevents_o1 ON drgevents USING btree (hadm_id);
-
-
---
--- Name: drgevents_o2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX drgevents_o2 ON drgevents USING btree (itemid);
-
-
---
--- Name: drgevents_o32; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX drgevents_o32 ON drgevents USING btree (subject_id);
-
-
---
--- Name: icd9_o2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX icd9_o2 ON icd9 USING btree (hadm_id);
-
-
---
--- Name: icu9_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX icu9_o1 ON icd9 USING btree (subject_id);
-
-
---
--- Name: icustay_days_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX icustay_days_o1 ON icustay_days USING btree (icustay_id, seq);
-
-
---
--- Name: icustay_detail_pk; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE UNIQUE INDEX icustay_detail_pk ON icustay_detail USING btree (icustay_id);
-
-
---
--- Name: icustay_detail_u1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE UNIQUE INDEX icustay_detail_u1 ON icustay_detail USING btree (subject_id, icustay_id);
-
-
---
--- Name: icustayev_u1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE UNIQUE INDEX icustayev_u1 ON icustayevents USING btree (subject_id, intime);
-
-
---
--- Name: icustayevents_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX icustayevents_o1 ON icustayevents USING btree (intime);
-
-
---
--- Name: icustayevents_o2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX icustayevents_o2 ON icustayevents USING btree (outtime);
-
-
---
--- Name: icustayevents_o3; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX icustayevents_o3 ON icustayevents USING btree (last_careunit);
-
-
---
--- Name: icustayevents_o4; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX icustayevents_o4 ON icustayevents USING btree (first_careunit);
-
-
---
--- Name: ioevents_o6; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX ioevents_o6 ON ioevents USING btree (cgid);
-
-
---
--- Name: labevents_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX labevents_o1 ON labevents USING btree (subject_id);
-
-
---
--- Name: labevents_o2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX labevents_o2 ON labevents USING btree (hadm_id);
-
-
---
--- Name: labevents_o3; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX labevents_o3 ON labevents USING btree (icustay_id);
-
-
---
--- Name: labevents_o4; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX labevents_o4 ON labevents USING btree (itemid);
-
-
---
--- Name: labevents_o5; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX labevents_o5 ON labevents USING btree (icustay_id, itemid);
-
-
---
--- Name: medevents_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX medevents_o1 ON medevents USING btree (cuid);
-
-
---
--- Name: medevents_o2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX medevents_o2 ON medevents USING btree (subject_id);
-
-
---
--- Name: medevents_o3; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX medevents_o3 ON medevents USING btree (itemid);
-
-
---
--- Name: medevents_o4; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX medevents_o4 ON medevents USING btree (solutionid);
-
-
---
--- Name: medevents_o5; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX medevents_o5 ON medevents USING btree (icustay_id);
-
-
---
--- Name: medevents_o6; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX medevents_o6 ON medevents USING btree (cgid);
-
-
---
--- Name: medevents_pk; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE UNIQUE INDEX medevents_pk ON medevents USING btree (subject_id, itemid, charttime, elemid);
-
-
---
--- Name: microbiologyevents_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX microbiologyevents_o1 ON microbiologyevents USING btree (ab_itemid);
-
-
---
--- Name: microbiologyevents_o2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX microbiologyevents_o2 ON microbiologyevents USING btree (hadm_id);
-
-
---
--- Name: microbiologyevents_o3; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX microbiologyevents_o3 ON microbiologyevents USING btree (subject_id);
-
-
---
--- Name: microbiologyevents_o4; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX microbiologyevents_o4 ON microbiologyevents USING btree (org_itemid);
-
-
---
--- Name: microbiologyevents_o5; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX microbiologyevents_o5 ON microbiologyevents USING btree (spec_itemid);
-
-
---
--- Name: noteevents_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX noteevents_o1 ON noteevents USING btree (cuid);
-
-
---
--- Name: noteevents_o2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX noteevents_o2 ON noteevents USING btree (subject_id);
-
-
---
--- Name: noteevents_o3; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX noteevents_o3 ON noteevents USING btree (icustay_id);
-
-
---
--- Name: noteevents_o4; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX noteevents_o4 ON noteevents USING btree (hadm_id);
-
-
---
--- Name: noteevents_o5; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX noteevents_o5 ON noteevents USING btree (category);
-
-
---
--- Name: noteevents_o6; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX noteevents_o6 ON noteevents USING btree (cgid);
-
-
---
--- Name: poe_med_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX poe_med_o1 ON poe_med USING btree (poe_id);
-
-
---
--- Name: poe_order_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX poe_order_o1 ON poe_order USING btree (subject_id, hadm_id);
-
-
---
--- Name: poe_order_o2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX poe_order_o2 ON poe_order USING btree (subject_id);
-
-
---
--- Name: poe_order_o3; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX poe_order_o3 ON poe_order USING btree (hadm_id);
-
-
---
--- Name: poe_order_o4; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX poe_order_o4 ON poe_order USING btree (icustay_id);
-
-
---
--- Name: procedureevents_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX procedureevents_o1 ON procedureevents USING btree (hadm_id);
-
-
---
--- Name: procedureevents_o2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX procedureevents_o2 ON procedureevents USING btree (itemid);
-
-
---
--- Name: totalbalevents_o1; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX totalbalevents_o1 ON totalbalevents USING btree (cuid);
-
-
---
--- Name: totalbalevents_o2; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX totalbalevents_o2 ON totalbalevents USING btree (subject_id);
-
-
---
--- Name: totalbalevents_o3; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX totalbalevents_o3 ON totalbalevents USING btree (itemid);
-
-
---
--- Name: totalbalevents_o4; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX totalbalevents_o4 ON totalbalevents USING btree (icustay_id);
-
-
---
--- Name: totalbalevents_o5; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE INDEX totalbalevents_o5 ON totalbalevents USING btree (cgid);
-
-
---
--- Name: unique_schema_migrations; Type: INDEX; Schema: mimic2v26; Owner: -; Tablespace: 
---
-
-CREATE UNIQUE INDEX unique_schema_migrations ON schema_migrations USING btree (version);
-
-
---
--- Name: a_chartd_fk_d_careun; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY a_chartdurations
-    ADD CONSTRAINT a_chartd_fk_d_careun FOREIGN KEY (cuid) REFERENCES d_careunits(cuid) DEFERRABLE;
-
-
---
--- Name: a_chartd_fk_d_charti; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY a_chartdurations
-    ADD CONSTRAINT a_chartd_fk_d_charti FOREIGN KEY (itemid) REFERENCES d_chartitems(itemid) DEFERRABLE;
-
-
---
--- Name: a_chartd_fk_d_patien; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY a_chartdurations
-    ADD CONSTRAINT a_chartd_fk_d_patien FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
-
-
---
--- Name: a_chartd_fk_icustay; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY a_chartdurations
-    ADD CONSTRAINT a_chartd_fk_icustay FOREIGN KEY (icustay_id) REFERENCES icustayevents(icustay_id) DEFERRABLE;
-
-
---
--- Name: a_iodura_fk_d_careun; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY a_iodurations
-    ADD CONSTRAINT a_iodura_fk_d_careun FOREIGN KEY (cuid) REFERENCES d_careunits(cuid) DEFERRABLE;
-
-
---
--- Name: a_iodura_fk_d_ioitem; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY a_iodurations
-    ADD CONSTRAINT a_iodura_fk_d_ioitem FOREIGN KEY (itemid) REFERENCES d_ioitems(itemid) DEFERRABLE;
-
-
---
--- Name: a_iodura_fk_d_patien; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY a_iodurations
-    ADD CONSTRAINT a_iodura_fk_d_patien FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
-
-
---
--- Name: a_iodura_fk_icustay; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY a_iodurations
-    ADD CONSTRAINT a_iodura_fk_icustay FOREIGN KEY (icustay_id) REFERENCES icustayevents(icustay_id) DEFERRABLE;
-
-
---
--- Name: a_meddur_fk_d_careun; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY a_meddurations
-    ADD CONSTRAINT a_meddur_fk_d_careun FOREIGN KEY (cuid) REFERENCES d_careunits(cuid) DEFERRABLE;
-
-
---
--- Name: a_meddur_fk_d_medite; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY a_meddurations
-    ADD CONSTRAINT a_meddur_fk_d_medite FOREIGN KEY (itemid) REFERENCES d_meditems(itemid) DEFERRABLE;
-
-
---
--- Name: a_meddur_fk_d_patien; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY a_meddurations
-    ADD CONSTRAINT a_meddur_fk_d_patien FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
-
-
---
--- Name: a_meddur_fk_icustay; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY a_meddurations
-    ADD CONSTRAINT a_meddur_fk_icustay FOREIGN KEY (icustay_id) REFERENCES icustayevents(icustay_id) DEFERRABLE;
-
-
---
--- Name: additives_fk_d_caregi; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY additives
-    ADD CONSTRAINT additives_fk_d_caregi FOREIGN KEY (cgid) REFERENCES d_caregivers(cgid) DEFERRABLE;
-
-
---
--- Name: additives_fk_d_careun; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY additives
-    ADD CONSTRAINT additives_fk_d_careun FOREIGN KEY (cuid) REFERENCES d_careunits(cuid) DEFERRABLE;
-
-
---
--- Name: additives_fk_d_ioitem; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY additives
-    ADD CONSTRAINT additives_fk_d_ioitem FOREIGN KEY (ioitemid) REFERENCES d_ioitems(itemid) DEFERRABLE;
-
-
---
--- Name: additives_fk_d_medite; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY additives
-    ADD CONSTRAINT additives_fk_d_medite FOREIGN KEY (itemid) REFERENCES d_meditems(itemid) DEFERRABLE;
-
-
---
--- Name: additives_fk_d_patien; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY additives
-    ADD CONSTRAINT additives_fk_d_patien FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
-
-
---
--- Name: additives_fk_icustay; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY additives
-    ADD CONSTRAINT additives_fk_icustay FOREIGN KEY (icustay_id) REFERENCES icustayevents(icustay_id) DEFERRABLE;
-
-
---
--- Name: admissions_fk_d_pati; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: admissions_fk_subject_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
 ALTER TABLE ONLY admissions
-    ADD CONSTRAINT admissions_fk_d_pati FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
+    ADD CONSTRAINT admissions_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
 
 
 --
--- Name: censusev_fk2_d_careun; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: callout_fk_hadm_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
-ALTER TABLE ONLY censusevents
-    ADD CONSTRAINT censusev_fk2_d_careun FOREIGN KEY (destcareunit) REFERENCES d_careunits(cuid) DEFERRABLE;
-
-
---
--- Name: censusev_fk_d_careun; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY censusevents
-    ADD CONSTRAINT censusev_fk_d_careun FOREIGN KEY (careunit) REFERENCES d_careunits(cuid) DEFERRABLE;
+ALTER TABLE ONLY callout
+    ADD CONSTRAINT callout_fk_hadm_id FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id);
 
 
 --
--- Name: censusev_fk_d_patien; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: callout_fk_subject_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
-ALTER TABLE ONLY censusevents
-    ADD CONSTRAINT censusev_fk_d_patien FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
-
-
---
--- Name: censusev_fk_icustay; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY censusevents
-    ADD CONSTRAINT censusev_fk_icustay FOREIGN KEY (icustay_id) REFERENCES icustayevents(icustay_id) DEFERRABLE;
+ALTER TABLE ONLY callout
+    ADD CONSTRAINT callout_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
 
 
 --
--- Name: charteve_fk_d_caregi; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: chartevents_fk_hadm_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
 ALTER TABLE ONLY chartevents
-    ADD CONSTRAINT charteve_fk_d_caregi FOREIGN KEY (cgid) REFERENCES d_caregivers(cgid) DEFERRABLE;
+    ADD CONSTRAINT chartevents_fk_hadm_id FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id);
 
 
 --
--- Name: charteve_fk_d_careun; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY chartevents
-    ADD CONSTRAINT charteve_fk_d_careun FOREIGN KEY (cuid) REFERENCES d_careunits(cuid) DEFERRABLE;
-
-
---
--- Name: charteve_fk_d_charti; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: chartevents_fk_icustay_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
 ALTER TABLE ONLY chartevents
-    ADD CONSTRAINT charteve_fk_d_charti FOREIGN KEY (itemid) REFERENCES d_chartitems(itemid) DEFERRABLE;
+    ADD CONSTRAINT chartevents_fk_icustay_id FOREIGN KEY (icustay_id) REFERENCES icustayevents(icustay_id);
 
 
 --
--- Name: charteve_fk_d_patien; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY chartevents
-    ADD CONSTRAINT charteve_fk_d_patien FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
-
-
---
--- Name: charteve_fk_icustay; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: chartevents_fk_itemid; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
 ALTER TABLE ONLY chartevents
-    ADD CONSTRAINT charteve_fk_icustay FOREIGN KEY (icustay_id) REFERENCES icustayevents(icustay_id) DEFERRABLE;
+    ADD CONSTRAINT chartevents_fk_itemid FOREIGN KEY (itemid) REFERENCES d_items(itemid);
 
 
 --
--- Name: deliveri_fk_d_caregi; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: chartevents_fk_subject_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
-ALTER TABLE ONLY deliveries
-    ADD CONSTRAINT deliveri_fk_d_caregi FOREIGN KEY (cgid) REFERENCES d_caregivers(cgid) DEFERRABLE;
-
-
---
--- Name: deliveri_fk_d_careun; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY deliveries
-    ADD CONSTRAINT deliveri_fk_d_careun FOREIGN KEY (cuid) REFERENCES d_careunits(cuid) DEFERRABLE;
+ALTER TABLE ONLY chartevents
+    ADD CONSTRAINT chartevents_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
 
 
 --
--- Name: deliveri_fk_d_ioitem; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: cptevents_fk_hadm_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
-ALTER TABLE ONLY deliveries
-    ADD CONSTRAINT deliveri_fk_d_ioitem FOREIGN KEY (ioitemid) REFERENCES d_ioitems(itemid) DEFERRABLE;
-
-
---
--- Name: deliveri_fk_d_patien; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY deliveries
-    ADD CONSTRAINT deliveri_fk_d_patien FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
+ALTER TABLE ONLY cptevents
+    ADD CONSTRAINT cptevents_fk_hadm_id FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id);
 
 
 --
--- Name: deliveri_fk_icustay; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: cptevents_fk_subject_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
-ALTER TABLE ONLY deliveries
-    ADD CONSTRAINT deliveri_fk_icustay FOREIGN KEY (icustay_id) REFERENCES icustayevents(icustay_id) DEFERRABLE;
-
-
---
--- Name: demographicevents_fk_admit; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY demographicevents
-    ADD CONSTRAINT demographicevents_fk_admit FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id) DEFERRABLE;
+ALTER TABLE ONLY cptevents
+    ADD CONSTRAINT cptevents_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
 
 
 --
--- Name: demographicevents_fk_d_patien; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: datetimeevents_fk_hadm_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
-ALTER TABLE ONLY demographicevents
-    ADD CONSTRAINT demographicevents_fk_d_patien FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
-
-
---
--- Name: demographicevents_fk_itemid; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY demographicevents
-    ADD CONSTRAINT demographicevents_fk_itemid FOREIGN KEY (itemid) REFERENCES d_demographicitems(itemid) DEFERRABLE;
+ALTER TABLE ONLY datetimeevents
+    ADD CONSTRAINT datetimeevents_fk_hadm_id FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id);
 
 
 --
--- Name: drgevents_fk_admit; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: datetimeevents_fk_icustay_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
-ALTER TABLE ONLY drgevents
-    ADD CONSTRAINT drgevents_fk_admit FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id) DEFERRABLE;
-
-
---
--- Name: drgevents_fk_d_patien; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY drgevents
-    ADD CONSTRAINT drgevents_fk_d_patien FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
+ALTER TABLE ONLY datetimeevents
+    ADD CONSTRAINT datetimeevents_fk_icustay_id FOREIGN KEY (icustay_id) REFERENCES icustayevents(icustay_id);
 
 
 --
--- Name: drgevents_fk_itemid; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: datetimeevents_fk_itemid; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
-ALTER TABLE ONLY drgevents
-    ADD CONSTRAINT drgevents_fk_itemid FOREIGN KEY (itemid) REFERENCES d_codeditems(itemid) DEFERRABLE;
-
-
---
--- Name: icd9_fk_admiss; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY icd9
-    ADD CONSTRAINT icd9_fk_admiss FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id) DEFERRABLE;
+ALTER TABLE ONLY datetimeevents
+    ADD CONSTRAINT datetimeevents_fk_itemid FOREIGN KEY (itemid) REFERENCES d_items(itemid);
 
 
 --
--- Name: icd9_fk_d_patien; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: datetimeevents_fk_subject_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
-ALTER TABLE ONLY icd9
-    ADD CONSTRAINT icd9_fk_d_patien FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
+ALTER TABLE ONLY datetimeevents
+    ADD CONSTRAINT datetimeevents_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
 
 
 --
--- Name: icustayev_fk2_d_careu; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: diagnoses_icd_fk_hadm_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
+--
+
+ALTER TABLE ONLY diagnoses_icd
+    ADD CONSTRAINT diagnoses_icd_fk_hadm_id FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id);
+
+
+--
+-- Name: diagnoses_icd_fk_subject_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
+--
+
+ALTER TABLE ONLY diagnoses_icd
+    ADD CONSTRAINT diagnoses_icd_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
+
+
+--
+-- Name: drgcodes_fk_hadm_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
+--
+
+ALTER TABLE ONLY drgcodes
+    ADD CONSTRAINT drgcodes_fk_hadm_id FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id);
+
+
+--
+-- Name: drgcodes_fk_subject_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
+--
+
+ALTER TABLE ONLY drgcodes
+    ADD CONSTRAINT drgcodes_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
+
+
+--
+-- Name: icustayevents_fk_hadm_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
 ALTER TABLE ONLY icustayevents
-    ADD CONSTRAINT icustayev_fk2_d_careu FOREIGN KEY (last_careunit) REFERENCES d_careunits(cuid) DEFERRABLE;
+    ADD CONSTRAINT icustayevents_fk_hadm_id FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id);
 
 
 --
--- Name: icustayev_fk_d_careu; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY icustayevents
-    ADD CONSTRAINT icustayev_fk_d_careu FOREIGN KEY (first_careunit) REFERENCES d_careunits(cuid) DEFERRABLE;
-
-
---
--- Name: icustayev_fk_d_pat; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: icustayevents_fk_subject_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
 ALTER TABLE ONLY icustayevents
-    ADD CONSTRAINT icustayev_fk_d_pat FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
+    ADD CONSTRAINT icustayevents_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
 
 
 --
--- Name: ioevents_fk2_d_ioitem; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY ioevents
-    ADD CONSTRAINT ioevents_fk2_d_ioitem FOREIGN KEY (altid) REFERENCES d_ioitems(itemid) DEFERRABLE;
-
-
---
--- Name: ioevents_fk_d_caregi; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: ioevents_fk_hadm_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
 ALTER TABLE ONLY ioevents
-    ADD CONSTRAINT ioevents_fk_d_caregi FOREIGN KEY (cgid) REFERENCES d_caregivers(cgid) DEFERRABLE;
+    ADD CONSTRAINT ioevents_fk_hadm_id FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id);
 
 
 --
--- Name: ioevents_fk_d_careun; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY ioevents
-    ADD CONSTRAINT ioevents_fk_d_careun FOREIGN KEY (cuid) REFERENCES d_careunits(cuid) DEFERRABLE;
-
-
---
--- Name: ioevents_fk_d_ioitem; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: ioevents_fk_icustay_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
 ALTER TABLE ONLY ioevents
-    ADD CONSTRAINT ioevents_fk_d_ioitem FOREIGN KEY (itemid) REFERENCES d_ioitems(itemid) DEFERRABLE;
+    ADD CONSTRAINT ioevents_fk_icustay_id FOREIGN KEY (icustay_id) REFERENCES icustayevents(icustay_id);
 
 
 --
--- Name: ioevents_fk_d_patien; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY ioevents
-    ADD CONSTRAINT ioevents_fk_d_patien FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
-
-
---
--- Name: ioevents_fk_icustay; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: ioevents_fk_subject_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
 ALTER TABLE ONLY ioevents
-    ADD CONSTRAINT ioevents_fk_icustay FOREIGN KEY (icustay_id) REFERENCES icustayevents(icustay_id) DEFERRABLE;
+    ADD CONSTRAINT ioevents_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
 
 
 --
--- Name: labevents_fk_hadm_id; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: labevents_fk_hadm_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
 ALTER TABLE ONLY labevents
-    ADD CONSTRAINT labevents_fk_hadm_id FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id) DEFERRABLE;
+    ADD CONSTRAINT labevents_fk_hadm_id FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id);
 
 
 --
--- Name: labevents_fk_icustay_id; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY labevents
-    ADD CONSTRAINT labevents_fk_icustay_id FOREIGN KEY (icustay_id) REFERENCES icustayevents(icustay_id) DEFERRABLE;
-
-
---
--- Name: labevents_fk_itemid; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: labevents_fk_itemid; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
 ALTER TABLE ONLY labevents
-    ADD CONSTRAINT labevents_fk_itemid FOREIGN KEY (itemid) REFERENCES d_labitems(itemid) DEFERRABLE;
+    ADD CONSTRAINT labevents_fk_itemid FOREIGN KEY (itemid) REFERENCES d_labitems(itemid);
 
 
 --
--- Name: labevents_fk_subject_id; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: labevents_fk_subject_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
 ALTER TABLE ONLY labevents
-    ADD CONSTRAINT labevents_fk_subject_id FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
+    ADD CONSTRAINT labevents_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
 
 
 --
--- Name: medevent_fk2_d_medite; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY medevents
-    ADD CONSTRAINT medevent_fk2_d_medite FOREIGN KEY (solutionid) REFERENCES d_meditems(itemid) DEFERRABLE;
-
-
---
--- Name: medevent_fk_d_caregi; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY medevents
-    ADD CONSTRAINT medevent_fk_d_caregi FOREIGN KEY (cgid) REFERENCES d_caregivers(cgid) DEFERRABLE;
-
-
---
--- Name: medevent_fk_d_careun; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY medevents
-    ADD CONSTRAINT medevent_fk_d_careun FOREIGN KEY (cuid) REFERENCES d_careunits(cuid) DEFERRABLE;
-
-
---
--- Name: medevent_fk_d_medite; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY medevents
-    ADD CONSTRAINT medevent_fk_d_medite FOREIGN KEY (itemid) REFERENCES d_meditems(itemid) DEFERRABLE;
-
-
---
--- Name: medevent_fk_d_patien; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY medevents
-    ADD CONSTRAINT medevent_fk_d_patien FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
-
-
---
--- Name: medevents_fk_icustay; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY medevents
-    ADD CONSTRAINT medevents_fk_icustay FOREIGN KEY (icustay_id) REFERENCES icustayevents(icustay_id) DEFERRABLE;
-
-
---
--- Name: microbioev_ab_fk_d_coded; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: microbiologyevents_fk_hadm_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
 ALTER TABLE ONLY microbiologyevents
-    ADD CONSTRAINT microbioev_ab_fk_d_coded FOREIGN KEY (ab_itemid) REFERENCES d_codeditems(itemid) DEFERRABLE;
+    ADD CONSTRAINT microbiologyevents_fk_hadm_id FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id);
 
 
 --
--- Name: microbioev_fk_admissions; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY microbiologyevents
-    ADD CONSTRAINT microbioev_fk_admissions FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id) DEFERRABLE;
-
-
---
--- Name: microbioev_fk_d_patients; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: microbiologyevents_fk_subject_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
 ALTER TABLE ONLY microbiologyevents
-    ADD CONSTRAINT microbioev_fk_d_patients FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
+    ADD CONSTRAINT microbiologyevents_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
 
 
 --
--- Name: microbioev_org_fk_d_coded; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY microbiologyevents
-    ADD CONSTRAINT microbioev_org_fk_d_coded FOREIGN KEY (org_itemid) REFERENCES d_codeditems(itemid) DEFERRABLE;
-
-
---
--- Name: microbioev_spec_fk_d_coded; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY microbiologyevents
-    ADD CONSTRAINT microbioev_spec_fk_d_coded FOREIGN KEY (spec_itemid) REFERENCES d_codeditems(itemid) DEFERRABLE;
-
-
---
--- Name: noteeven_fk_adm; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: noteevents_fk_cgid; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
 ALTER TABLE ONLY noteevents
-    ADD CONSTRAINT noteeven_fk_adm FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id) DEFERRABLE;
+    ADD CONSTRAINT noteevents_fk_cgid FOREIGN KEY (cgid) REFERENCES caregivers(cgid);
 
 
 --
--- Name: noteeven_fk_d_caregi; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY noteevents
-    ADD CONSTRAINT noteeven_fk_d_caregi FOREIGN KEY (cgid) REFERENCES d_caregivers(cgid) DEFERRABLE;
-
-
---
--- Name: noteeven_fk_d_careun; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: noteevents_fk_hadm_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
 ALTER TABLE ONLY noteevents
-    ADD CONSTRAINT noteeven_fk_d_careun FOREIGN KEY (cuid) REFERENCES d_careunits(cuid) DEFERRABLE;
+    ADD CONSTRAINT noteevents_fk_hadm_id FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id);
 
 
 --
--- Name: noteeven_fk_d_patien; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY noteevents
-    ADD CONSTRAINT noteeven_fk_d_patien FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
-
-
---
--- Name: noteeven_fk_icustay; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: noteevents_fk_subject_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
 ALTER TABLE ONLY noteevents
-    ADD CONSTRAINT noteeven_fk_icustay FOREIGN KEY (icustay_id) REFERENCES icustayevents(icustay_id) DEFERRABLE;
+    ADD CONSTRAINT noteevents_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
 
 
 --
--- Name: poe_med_poe_order_fk1; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: prescriptions_fk_hadm_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
-ALTER TABLE ONLY poe_med
-    ADD CONSTRAINT poe_med_poe_order_fk1 FOREIGN KEY (poe_id) REFERENCES poe_order(poe_id) DEFERRABLE;
-
-
---
--- Name: poe_order_fk_admiss; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY poe_order
-    ADD CONSTRAINT poe_order_fk_admiss FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id) DEFERRABLE;
+ALTER TABLE ONLY prescriptions
+    ADD CONSTRAINT prescriptions_fk_hadm_id FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id);
 
 
 --
--- Name: poe_order_fk_d_patien; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: prescriptions_fk_icustay_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
-ALTER TABLE ONLY poe_order
-    ADD CONSTRAINT poe_order_fk_d_patien FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
-
-
---
--- Name: poe_order_fk_icustay; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY poe_order
-    ADD CONSTRAINT poe_order_fk_icustay FOREIGN KEY (icustay_id) REFERENCES icustayevents(icustay_id) DEFERRABLE;
+ALTER TABLE ONLY prescriptions
+    ADD CONSTRAINT prescriptions_fk_icustay_id FOREIGN KEY (icustay_id) REFERENCES icustayevents(icustay_id);
 
 
 --
--- Name: procedureevents_fk_adm; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: prescriptions_fk_subject_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
-ALTER TABLE ONLY procedureevents
-    ADD CONSTRAINT procedureevents_fk_adm FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id) DEFERRABLE;
-
-
---
--- Name: procedureevents_fk_d_coded; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY procedureevents
-    ADD CONSTRAINT procedureevents_fk_d_coded FOREIGN KEY (itemid) REFERENCES d_codeditems(itemid) DEFERRABLE;
+ALTER TABLE ONLY prescriptions
+    ADD CONSTRAINT prescriptions_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
 
 
 --
--- Name: procedureevents_fk_d_patien; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: procedures_icd_fk_hadm_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
-ALTER TABLE ONLY procedureevents
-    ADD CONSTRAINT procedureevents_fk_d_patien FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
-
-
---
--- Name: totalbal_fk_d_caregi; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY totalbalevents
-    ADD CONSTRAINT totalbal_fk_d_caregi FOREIGN KEY (cgid) REFERENCES d_caregivers(cgid) DEFERRABLE;
+ALTER TABLE ONLY procedures_icd
+    ADD CONSTRAINT procedures_icd_fk_hadm_id FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id);
 
 
 --
--- Name: totalbal_fk_d_careun; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: procedures_icd_fk_subject_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
-ALTER TABLE ONLY totalbalevents
-    ADD CONSTRAINT totalbal_fk_d_careun FOREIGN KEY (cuid) REFERENCES d_careunits(cuid) DEFERRABLE;
-
-
---
--- Name: totalbal_fk_d_ioitem; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
---
-
-ALTER TABLE ONLY totalbalevents
-    ADD CONSTRAINT totalbal_fk_d_ioitem FOREIGN KEY (itemid) REFERENCES d_ioitems(itemid) DEFERRABLE;
+ALTER TABLE ONLY procedures_icd
+    ADD CONSTRAINT procedures_icd_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
 
 
 --
--- Name: totalbal_fk_d_patien; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: services_fk_hadm_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
-ALTER TABLE ONLY totalbalevents
-    ADD CONSTRAINT totalbal_fk_d_patien FOREIGN KEY (subject_id) REFERENCES d_patients(subject_id) DEFERRABLE;
+ALTER TABLE ONLY services
+    ADD CONSTRAINT services_fk_hadm_id FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id);
 
 
 --
--- Name: totalbal_fk_icustay; Type: FK CONSTRAINT; Schema: mimic2v26; Owner: -
+-- Name: services_fk_subject_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
-ALTER TABLE ONLY totalbalevents
-    ADD CONSTRAINT totalbal_fk_icustay FOREIGN KEY (icustay_id) REFERENCES icustayevents(icustay_id) DEFERRABLE;
+ALTER TABLE ONLY services
+    ADD CONSTRAINT services_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
+
+
+--
+-- Name: transfers_fk_hadm_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
+--
+
+ALTER TABLE ONLY transfers
+    ADD CONSTRAINT transfers_fk_hadm_id FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id);
+
+
+--
+-- Name: transfers_fk_icustay_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
+--
+
+ALTER TABLE ONLY transfers
+    ADD CONSTRAINT transfers_fk_icustay_id FOREIGN KEY (icustay_id) REFERENCES icustayevents(icustay_id);
+
+
+--
+-- Name: transfers_fk_subject_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
+--
+
+ALTER TABLE ONLY transfers
+    ADD CONSTRAINT transfers_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
 
 
 --
 -- PostgreSQL database dump complete
 --
-
-SET search_path TO mimic2v26;
-
-INSERT INTO schema_migrations (version) VALUES ('20150724163127');
-
-INSERT INTO schema_migrations (version) VALUES ('20150726205354');
 
