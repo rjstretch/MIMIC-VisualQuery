@@ -37,7 +37,7 @@
 
         <select id="fields_count" class="field_selector" multiple="multiple">
           <option value="subject_id">Subject ID</option>
-          <option value="drgevents.itemid">DRG Code</option>
+          <option value="drgcodes.drg_code">DRG Code</option>
           <option value="icd9.code">ICD Code</option>
         </select>
 
@@ -68,7 +68,7 @@
           <option value="icustay_first_flg">Subject's first ICU stay (for any given admission)</option>
           <option value="icustay_last_flg">Subject's last ICU stay (for any given admission)</option>
 
-          <option value="drgevents.itemid">DRG Codes</option>
+          <option value="drgcodes.drg_code">DRG Codes</option>
           <option value="icd9.code">ICD-9 Codes</option>
         </select>
 
@@ -141,8 +141,8 @@
         </select>
 
         <select id="fields_admission" class="field_selector" multiple="multiple">
-          <option value="hadm.drgevents.item.code">DRG Code</option>
-          <option value="hadm.drgevents.item.description">DRG Description</option>
+          <option value="hadm.drgcodes.drg_code">DRG Code</option>
+          <option value="hadm.drgcodes.description">DRG Description</option>
           <option value="hadm.icd_codes.code">ICD9 Codes</option>
           <option value="hadm.icd_codes.description">ICD9 Code Descriptions</option>
         </select>

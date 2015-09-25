@@ -23,7 +23,7 @@ default: &default
 
 development:
   <<: *default
-  schema_search_path: "mimic2v26"
+  schema_search_path: "mimiciii"
   database: <%= ENV['MIMIC_DATABASE'] %>
   username: <%= ENV['MIMIC_DATABASE_USER'] %>
   password: <%= ENV['MIMIC_DATABASE_PASSWORD'] %>

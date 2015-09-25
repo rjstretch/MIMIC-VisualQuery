@@ -20,7 +20,7 @@ class HomeController < ApplicationController
 	@data = IcustayDetail.where(params[:icustay_detail])
 
 	if !params[:medevents].blank?
-		meds = Medevent.where(params[:medevents])
+		meds = Ioevent.where(params[:medevents])
 		@data = @data.where{icustay_id.in(meds.select{icustay_id})}
 	end
 
@@ -47,8 +47,12 @@ class HomeController < ApplicationController
 			c2 = c1
 		end
 
-		icd = IcdCode.where(c2)
-		@data = @data.where{hadm_id.in(icd.select{hadm_id})}
+		icd_diag = DiagnosisIcd.where(c2)
+		@data = @data.where{hadm_id.in(icd_diag.select{hadm_id})}
+
+		# TO BE IMPLEMENTED
+		# icd_proc = ProcedureIcd.where(c2)
+		# @data = @data.where{hadm_id.in(icd_proc.select{hadm_id})}
 	end
 
 	if (params[:distinct] != "null")

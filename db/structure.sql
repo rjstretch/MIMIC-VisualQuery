@@ -15,6 +15,21 @@ SET client_min_messages = warning;
 
 CREATE SCHEMA mimiciii;
 
+
+--
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+--
+
+CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+
+
 SET search_path = mimiciii, pg_catalog;
 
 SET default_tablespace = '';
@@ -26,7 +41,7 @@ SET default_with_oids = false;
 --
 
 CREATE TABLE admissions (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     subject_id integer NOT NULL,
     hadm_id integer NOT NULL,
     admittime timestamp(0) without time zone NOT NULL,
@@ -40,7 +55,9 @@ CREATE TABLE admissions (
     religion character varying(50),
     marital_status character varying(50),
     ethnicity character varying(200) NOT NULL,
-    diagnosis character varying(300)
+    diagnosis character varying(255),
+    has_ioevents_data smallint NOT NULL,
+    has_chartevents_data smallint NOT NULL
 );
 
 
@@ -49,7 +66,7 @@ CREATE TABLE admissions (
 --
 
 CREATE TABLE callout (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     subject_id integer NOT NULL,
     hadm_id integer NOT NULL,
     submit_wardid integer,
@@ -81,10 +98,10 @@ CREATE TABLE callout (
 --
 
 CREATE TABLE caregivers (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     cgid integer NOT NULL,
-    label character varying(50),
-    description character varying(50)
+    label character varying(15),
+    description character varying(30)
 );
 
 
@@ -93,7 +110,7 @@ CREATE TABLE caregivers (
 --
 
 CREATE TABLE chartevents (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     subject_id integer NOT NULL,
     hadm_id integer,
     icustay_id integer,
@@ -101,7 +118,7 @@ CREATE TABLE chartevents (
     charttime timestamp(0) without time zone,
     storetime timestamp(0) without time zone,
     cgid integer,
-    value character varying(300),
+    value character varying(255),
     valuenum double precision,
     uom character varying(50),
     warning integer,
@@ -116,7 +133,7 @@ CREATE TABLE chartevents (
 --
 
 CREATE TABLE cptevents (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     subject_id integer NOT NULL,
     hadm_id integer NOT NULL,
     costcenter character varying(10) NOT NULL,
@@ -126,7 +143,7 @@ CREATE TABLE cptevents (
     cpt_suffix character varying(5),
     ticket_id_seq integer,
     sectionheader character varying(50),
-    subsectionheader character varying(300),
+    subsectionheader character varying(255),
     description character varying(200)
 );
 
@@ -136,12 +153,12 @@ CREATE TABLE cptevents (
 --
 
 CREATE TABLE d_cpt (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     category smallint NOT NULL,
     sectionrange character varying(100) NOT NULL,
     sectionheader character varying(50) NOT NULL,
     subsectionrange character varying(100) NOT NULL,
-    subsectionheader character varying(300) NOT NULL,
+    subsectionheader character varying(255) NOT NULL,
     codesuffix character varying(5),
     mincodeinsubsection integer NOT NULL,
     maxcodeinsubsection integer NOT NULL
@@ -156,8 +173,9 @@ CREATE TABLE d_icd_diagnoses (
     row_id integer NOT NULL,
     icd9_code character varying(10) NOT NULL,
     short_title character varying(50) NOT NULL,
-    long_title character varying(300) NOT NULL
+    long_title character varying(255) NOT NULL
 );
+
 
 --
 -- Name: d_icd_procedures; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
@@ -167,15 +185,16 @@ CREATE TABLE d_icd_procedures (
     row_id integer NOT NULL,
     icd9_code character varying(10) NOT NULL,
     short_title character varying(50) NOT NULL,
-    long_title character varying(300) NOT NULL
+    long_title character varying(255) NOT NULL
 );
+
 
 --
 -- Name: d_items; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE d_items (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     itemid integer NOT NULL,
     label character varying(200),
     abbreviation character varying(100),
@@ -189,12 +208,13 @@ CREATE TABLE d_items (
     highnormalvalue double precision
 );
 
+
 --
 -- Name: d_labitems; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE d_labitems (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     itemid integer NOT NULL,
     label character varying(100) NOT NULL,
     fluid character varying(100) NOT NULL,
@@ -202,12 +222,13 @@ CREATE TABLE d_labitems (
     loinc_code character varying(100)
 );
 
+
 --
 -- Name: datetimeevents; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE datetimeevents (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     subject_id integer NOT NULL,
     hadm_id integer,
     icustay_id integer,
@@ -223,12 +244,13 @@ CREATE TABLE datetimeevents (
     stopped character varying(50)
 );
 
+
 --
 -- Name: diagnoses_icd; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE diagnoses_icd (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     subject_id integer NOT NULL,
     hadm_id integer NOT NULL,
     sequence integer,
@@ -236,27 +258,29 @@ CREATE TABLE diagnoses_icd (
     description character varying(50)
 );
 
+
 --
 -- Name: drgcodes; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE drgcodes (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     subject_id integer NOT NULL,
     hadm_id integer NOT NULL,
     drg_type character varying(20) NOT NULL,
     drg_code character varying(20) NOT NULL,
-    description character varying(300),
+    description character varying(255),
     drg_severity smallint,
     drg_mortality smallint
 );
+
 
 --
 -- Name: icustayevents; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE icustayevents (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     subject_id integer NOT NULL,
     hadm_id integer NOT NULL,
     icustay_id integer NOT NULL,
@@ -270,12 +294,13 @@ CREATE TABLE icustayevents (
     los double precision
 );
 
+
 --
 -- Name: ioevents; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE ioevents (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     subject_id integer NOT NULL,
     hadm_id integer,
     icustay_id integer,
@@ -315,12 +340,13 @@ CREATE TABLE ioevents (
     originalsite character varying(30)
 );
 
+
 --
 -- Name: labevents; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE labevents (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     subject_id integer NOT NULL,
     hadm_id integer,
     itemid integer NOT NULL,
@@ -331,12 +357,13 @@ CREATE TABLE labevents (
     flag character varying(20)
 );
 
+
 --
 -- Name: microbiologyevents; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE microbiologyevents (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     subject_id integer NOT NULL,
     hadm_id integer,
     chartdate timestamp(0) without time zone,
@@ -357,29 +384,13 @@ CREATE TABLE microbiologyevents (
     interpretation character varying(5)
 );
 
---
--- Name: noteevents; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
---
-
-CREATE TABLE noteevents (
-    row_id bigint NOT NULL,
-    record_id integer NOT NULL,
-    subject_id integer NOT NULL,
-    hadm_id integer,
-    chartdate timestamp(0) without time zone,
-    category character varying(50),
-    description character varying(300),
-    cgid integer,
-    iserror character(1),
-    text text
-);
 
 --
 -- Name: patients; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE patients (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     subject_id integer NOT NULL,
     gender character varying(5) NOT NULL,
     dob timestamp(0) without time zone NOT NULL,
@@ -389,12 +400,13 @@ CREATE TABLE patients (
     hospital_expire_flag character varying(5) NOT NULL
 );
 
+
 --
 -- Name: prescriptions; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE prescriptions (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     subject_id integer NOT NULL,
     hadm_id integer NOT NULL,
     icustay_id integer,
@@ -415,24 +427,26 @@ CREATE TABLE prescriptions (
     route character varying(120)
 );
 
+
 --
 -- Name: procedures_icd; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE procedures_icd (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     subject_id integer NOT NULL,
     hadm_id integer NOT NULL,
     proc_seq_num integer NOT NULL,
     icd9_code character varying(20) NOT NULL
 );
 
+
 --
 -- Name: services; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE services (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     subject_id integer NOT NULL,
     hadm_id integer NOT NULL,
     transfertime timestamp(0) without time zone NOT NULL,
@@ -440,12 +454,13 @@ CREATE TABLE services (
     curr_service character varying(20)
 );
 
+
 --
 -- Name: transfers; Type: TABLE; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
 CREATE TABLE transfers (
-    row_id bigint NOT NULL,
+    row_id integer NOT NULL,
     subject_id integer NOT NULL,
     hadm_id integer NOT NULL,
     icustay_id integer,
@@ -459,6 +474,7 @@ CREATE TABLE transfers (
     outtime timestamp(0) without time zone,
     los double precision
 );
+
 
 --
 -- Name: adm_hadm_unique; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
@@ -661,14 +677,6 @@ ALTER TABLE ONLY microbiologyevents
 
 
 --
--- Name: noteevents_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
---
-
-ALTER TABLE ONLY noteevents
-    ADD CONSTRAINT noteevents_rowid_pk PRIMARY KEY (row_id);
-
-
---
 -- Name: pat_rowid_pk; Type: CONSTRAINT; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
@@ -790,28 +798,448 @@ CREATE INDEX caregivers_idx01 ON caregivers USING btree (cgid, label);
 -- Name: chartevents_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX chartevents_idx01 ON chartevents USING btree (subject_id, hadm_id, icustay_id) WITH (fillfactor=100);
+CREATE INDEX chartevents_idx01 ON chartevents USING btree (subject_id, hadm_id, icustay_id);
 
 
 --
 -- Name: chartevents_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX chartevents_idx02 ON chartevents USING btree (itemid) WITH (fillfactor=100);
+CREATE INDEX chartevents_idx02 ON chartevents USING btree (itemid);
 
 
 --
 -- Name: chartevents_idx03; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX chartevents_idx03 ON chartevents USING btree (charttime, storetime) WITH (fillfactor=100);
+CREATE INDEX chartevents_idx03 ON chartevents USING btree (charttime, storetime);
 
 
 --
 -- Name: chartevents_idx04; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
 --
 
-CREATE INDEX chartevents_idx04 ON chartevents USING btree (cgid) WITH (fillfactor=100);
+CREATE INDEX chartevents_idx04 ON chartevents USING btree (cgid);
+
+
+--
+-- Name: chartevents_idx05; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX chartevents_idx05 ON chartevents USING btree (value);
+
+
+--
+-- Name: cptevents_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX cptevents_idx01 ON cptevents USING btree (subject_id, hadm_id);
+
+
+--
+-- Name: cptevents_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX cptevents_idx02 ON cptevents USING btree (cpt_cd, ticket_id_seq);
+
+
+--
+-- Name: d_icd_diag_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX d_icd_diag_idx02 ON d_icd_diagnoses USING btree (short_title, long_title);
+
+
+--
+-- Name: d_icd_proc_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX d_icd_proc_idx02 ON d_icd_procedures USING btree (short_title, long_title);
+
+
+--
+-- Name: d_items_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX d_items_idx01 ON d_items USING btree (itemid);
+
+
+--
+-- Name: d_items_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX d_items_idx02 ON d_items USING btree (label, dbsource);
+
+
+--
+-- Name: d_items_idx03; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX d_items_idx03 ON d_items USING btree (category);
+
+
+--
+-- Name: d_labitems_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX d_labitems_idx01 ON d_labitems USING btree (itemid);
+
+
+--
+-- Name: d_labitems_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX d_labitems_idx02 ON d_labitems USING btree (label, fluid, category);
+
+
+--
+-- Name: d_labitems_idx03; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX d_labitems_idx03 ON d_labitems USING btree (loinc_code);
+
+
+--
+-- Name: datetimeevents_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX datetimeevents_idx01 ON datetimeevents USING btree (subject_id, hadm_id, icustay_id);
+
+
+--
+-- Name: datetimeevents_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX datetimeevents_idx02 ON datetimeevents USING btree (itemid);
+
+
+--
+-- Name: datetimeevents_idx03; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX datetimeevents_idx03 ON datetimeevents USING btree (charttime);
+
+
+--
+-- Name: datetimeevents_idx04; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX datetimeevents_idx04 ON datetimeevents USING btree (cgid);
+
+
+--
+-- Name: datetimeevents_idx05; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX datetimeevents_idx05 ON datetimeevents USING btree (value);
+
+
+--
+-- Name: diagnoses_icd_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX diagnoses_icd_idx01 ON diagnoses_icd USING btree (subject_id, hadm_id);
+
+
+--
+-- Name: diagnoses_icd_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX diagnoses_icd_idx02 ON diagnoses_icd USING btree (icd9_code, sequence);
+
+
+--
+-- Name: diagnoses_icd_idx03; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX diagnoses_icd_idx03 ON diagnoses_icd USING btree (description);
+
+
+--
+-- Name: drgcodes_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX drgcodes_idx01 ON drgcodes USING btree (subject_id, hadm_id);
+
+
+--
+-- Name: drgcodes_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX drgcodes_idx02 ON drgcodes USING btree (drg_code, drg_type);
+
+
+--
+-- Name: drgcodes_idx03; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX drgcodes_idx03 ON drgcodes USING btree (description, drg_severity);
+
+
+--
+-- Name: icustayevents_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX icustayevents_idx01 ON icustayevents USING btree (subject_id, hadm_id);
+
+
+--
+-- Name: icustayevents_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX icustayevents_idx02 ON icustayevents USING btree (icustay_id, dbsource);
+
+
+--
+-- Name: icustayevents_idx03; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX icustayevents_idx03 ON icustayevents USING btree (los);
+
+
+--
+-- Name: icustayevents_idx04; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX icustayevents_idx04 ON icustayevents USING btree (first_careunit);
+
+
+--
+-- Name: icustayevents_idx05; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX icustayevents_idx05 ON icustayevents USING btree (last_careunit);
+
+
+--
+-- Name: ioevents_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX ioevents_idx01 ON ioevents USING btree (subject_id, hadm_id);
+
+
+--
+-- Name: ioevents_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX ioevents_idx02 ON ioevents USING btree (icustay_id);
+
+
+--
+-- Name: ioevents_idx03; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX ioevents_idx03 ON ioevents USING btree (endtime, starttime);
+
+
+--
+-- Name: ioevents_idx04; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX ioevents_idx04 ON ioevents USING btree (itemid);
+
+
+--
+-- Name: ioevents_idx05; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX ioevents_idx05 ON ioevents USING btree (rate);
+
+
+--
+-- Name: ioevents_idx06; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX ioevents_idx06 ON ioevents USING btree (volume);
+
+
+--
+-- Name: ioevents_idx07; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX ioevents_idx07 ON ioevents USING btree (cgid);
+
+
+--
+-- Name: ioevents_idx08; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX ioevents_idx08 ON ioevents USING btree (linkorderid, orderid);
+
+
+--
+-- Name: ioevents_idx09; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX ioevents_idx09 ON ioevents USING btree (ordercategorydescription, ordercategoryname, secondaryordercategoryname);
+
+
+--
+-- Name: ioevents_idx10; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX ioevents_idx10 ON ioevents USING btree (ordercomponenttypedescription, ordercategorydescription);
+
+
+--
+-- Name: labevents_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX labevents_idx01 ON labevents USING btree (subject_id, hadm_id);
+
+
+--
+-- Name: labevents_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX labevents_idx02 ON labevents USING btree (itemid);
+
+
+--
+-- Name: labevents_idx03; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX labevents_idx03 ON labevents USING btree (charttime);
+
+
+--
+-- Name: labevents_idx04; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX labevents_idx04 ON labevents USING btree (value, valuenum);
+
+
+--
+-- Name: microbiologyevents_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX microbiologyevents_idx01 ON microbiologyevents USING btree (subject_id, hadm_id);
+
+
+--
+-- Name: microbiologyevents_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX microbiologyevents_idx02 ON microbiologyevents USING btree (chartdate, charttime);
+
+
+--
+-- Name: microbiologyevents_idx03; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX microbiologyevents_idx03 ON microbiologyevents USING btree (spec_itemid, org_itemid, ab_itemid);
+
+
+--
+-- Name: patients_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX patients_idx01 ON patients USING btree (hospital_expire_flag);
+
+
+--
+-- Name: prescriptions_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX prescriptions_idx01 ON prescriptions USING btree (subject_id, hadm_id);
+
+
+--
+-- Name: prescriptions_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX prescriptions_idx02 ON prescriptions USING btree (icustay_id);
+
+
+--
+-- Name: prescriptions_idx03; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX prescriptions_idx03 ON prescriptions USING btree (drug_type);
+
+
+--
+-- Name: prescriptions_idx04; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX prescriptions_idx04 ON prescriptions USING btree (drug);
+
+
+--
+-- Name: prescriptions_idx05; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX prescriptions_idx05 ON prescriptions USING btree (starttime, endtime);
+
+
+--
+-- Name: procedures_icd_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX procedures_icd_idx01 ON procedures_icd USING btree (subject_id, hadm_id);
+
+
+--
+-- Name: procedures_icd_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX procedures_icd_idx02 ON procedures_icd USING btree (icd9_code, proc_seq_num);
+
+
+--
+-- Name: services_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX services_idx01 ON services USING btree (subject_id, hadm_id);
+
+
+--
+-- Name: services_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX services_idx02 ON services USING btree (transfertime);
+
+
+--
+-- Name: services_idx03; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX services_idx03 ON services USING btree (curr_service, prev_service);
+
+
+--
+-- Name: transfers_idx01; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX transfers_idx01 ON transfers USING btree (subject_id, hadm_id);
+
+
+--
+-- Name: transfers_idx02; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX transfers_idx02 ON transfers USING btree (icustay_id);
+
+
+--
+-- Name: transfers_idx03; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX transfers_idx03 ON transfers USING btree (curr_careunit, prev_careunit);
+
+
+--
+-- Name: transfers_idx04; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX transfers_idx04 ON transfers USING btree (intime, outtime);
+
+
+--
+-- Name: transfers_idx05; Type: INDEX; Schema: mimiciii; Owner: -; Tablespace: 
+--
+
+CREATE INDEX transfers_idx05 ON transfers USING btree (los);
 
 
 --
@@ -836,6 +1264,14 @@ ALTER TABLE ONLY callout
 
 ALTER TABLE ONLY callout
     ADD CONSTRAINT callout_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
+
+
+--
+-- Name: chartevents_fk_cgid; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
+--
+
+ALTER TABLE ONLY chartevents
+    ADD CONSTRAINT chartevents_fk_cgid FOREIGN KEY (cgid) REFERENCES caregivers(cgid);
 
 
 --
@@ -884,6 +1320,14 @@ ALTER TABLE ONLY cptevents
 
 ALTER TABLE ONLY cptevents
     ADD CONSTRAINT cptevents_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
+
+
+--
+-- Name: datetimeevents_fk_cgid; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
+--
+
+ALTER TABLE ONLY datetimeevents
+    ADD CONSTRAINT datetimeevents_fk_cgid FOREIGN KEY (cgid) REFERENCES caregivers(cgid);
 
 
 --
@@ -967,6 +1411,14 @@ ALTER TABLE ONLY icustayevents
 
 
 --
+-- Name: ioevents_fk_cgid; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
+--
+
+ALTER TABLE ONLY ioevents
+    ADD CONSTRAINT ioevents_fk_cgid FOREIGN KEY (cgid) REFERENCES caregivers(cgid);
+
+
+--
 -- Name: ioevents_fk_hadm_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
 --
 
@@ -1028,30 +1480,6 @@ ALTER TABLE ONLY microbiologyevents
 
 ALTER TABLE ONLY microbiologyevents
     ADD CONSTRAINT microbiologyevents_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
-
-
---
--- Name: noteevents_fk_cgid; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
---
-
-ALTER TABLE ONLY noteevents
-    ADD CONSTRAINT noteevents_fk_cgid FOREIGN KEY (cgid) REFERENCES caregivers(cgid);
-
-
---
--- Name: noteevents_fk_hadm_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
---
-
-ALTER TABLE ONLY noteevents
-    ADD CONSTRAINT noteevents_fk_hadm_id FOREIGN KEY (hadm_id) REFERENCES admissions(hadm_id);
-
-
---
--- Name: noteevents_fk_subject_id; Type: FK CONSTRAINT; Schema: mimiciii; Owner: -
---
-
-ALTER TABLE ONLY noteevents
-    ADD CONSTRAINT noteevents_fk_subject_id FOREIGN KEY (subject_id) REFERENCES patients(subject_id);
 
 
 --
@@ -1135,6 +1563,6 @@ ALTER TABLE ONLY transfers
 
 
 --
--- PostgreSQL database dump complete
+-- Name: public; Type: ACL; Schema: -; Owner: -
 --
 

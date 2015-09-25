@@ -248,8 +248,8 @@ runQuery = function() {
     distinct = null;
   } else {
     $.each(v, function(index, value) {
-      if (value.match('^drgevents.')) {
-        distinct.push(['drgevents', value]);
+      if (value.match('^drgcodes.')) {
+        distinct.push(['drgcodes', value]);
       } else if (value.match('^icd9.')) {
         distinct.push(['icd_codes', value]);
       } else {
@@ -264,8 +264,8 @@ runQuery = function() {
     aggregate = null;
   } else {
     $.each(v, function(index, value) {
-      if (value.match('^drgevents.')) {
-        aggregate.push(['drgevents', value]);
+      if (value.match('^drgcodes.')) {
+        aggregate.push(['drgcodes', value]);
       } else if (value.match('^icd9.')) {
         aggregate.push(['icd_codes', value]);
       } else {
