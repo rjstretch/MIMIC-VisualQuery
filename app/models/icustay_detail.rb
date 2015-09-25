@@ -11,7 +11,7 @@ class IcustayDetail < ActiveRecord::Base
 	has_many :callouts, :class_name => "Callout", :foreign_key => "hadm_id"
 
 	# DRG codes are by admission
-	has_many :drgcodes, :class_name => "Drgcode", :foreign_key => "hadm_id"
+	has_many :drgcodes, :through => :hadm, :class_name => "Drgcode", :source => "drgcodes"
 
 	# ICD and CPT codes are by ICU Stay
 	has_many :icd_diagnoses, :class_name => "DiagnosisIcd", :foreign_key => "icustay_id"
@@ -19,9 +19,9 @@ class IcustayDetail < ActiveRecord::Base
 	has_many :cptevents, :class_name => "Cptevent", :foreign_key => "icustay_id"
 
 	# Labevents, Noteevents, and Microbiologyevents are by admission
-	has_many :labevents, :class_name => "Labevent", :foreign_key => "hadm_id"
-	has_many :noteevents, :class_name => "Noteevent", :foreign_key => "hadm_id"
-	has_many :microbiologyevents, :class_name => "Microbiologyevent", :foreign_key => "hadm_id"
+	has_many :labevents, :through => :hadm, :class_name => "Labevent", :source => "labevents"
+	has_many :noteevents, :through => :hadm, :class_name => "Noteevent", :source => "noteevents"
+	has_many :microbiologyevents, :through => :hadm, :class_name => "Microbiologyevent", :source => "microbiologyevents"
 
 	# Chartevents, Datetimeevents, Ioevents and Prescriptions are by ICU Stay
 	has_many :chartevents, :class_name => "Chartevent", :foreign_key => "icustay_id"
