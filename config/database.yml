@@ -17,13 +17,15 @@
 default: &default
   adapter: postgresql
   encoding: unicode
+  host: <%= ENV['MIMIC_HOST'] %>
+  port: <%= ENV['MIMIC_PORT'] %>
   # For details on connection pooling, see rails configuration guide
   # http://guides.rubyonrails.org/configuring.html#database-pooling
   pool: 5
 
 development:
   <<: *default
-  schema_search_path: "mimiciii"
+  schema_search_path: <%= ENV['MIMIC_SCHEMA_SEARCH_PATH'] %>
   database: <%= ENV['MIMIC_DATABASE'] %>
   username: <%= ENV['MIMIC_DATABASE_USER'] %>
   password: <%= ENV['MIMIC_DATABASE_PASSWORD'] %>
