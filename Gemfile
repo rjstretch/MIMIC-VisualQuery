@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
+ruby '2.2.2'
 
 # MIMIC2-specific
 gem 'squeel'
@@ -56,6 +57,11 @@ gem 'sdoc', '~> 0.4.0', group: :doc
 
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
+
+group :production do
+	gem 'rails_12factor' # Heroku requirement
+	gem 'unicorn' # Heroku's preferred web server
+end
 
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
