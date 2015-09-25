@@ -4,17 +4,15 @@ class Icustayevent < ActiveRecord::Base
 	belongs_to :subject, :class_name => "Patient", :foreign_key => "subject_id"
 	belongs_to :hadm, :class_name => "Admission", :foreign_key => "hadm_id"
 
-	has_many :services, :class_name => "Service", :foreign_key => "hadm_id"
-	has_many :transfers, :class_name => "Transfer", :foreign_key => "hadm_id"
-	has_many :callouts, :class_name => "Callout", :foreign_key => "hadm_id"
+	has_many :services, :through => :hadm, :class_name => "Service", :source => "services"
+	has_many :transfers, :through => :hadm, :class_name => "Transfer", :source => "transfers"
+	has_many :callouts, :through => :hadm, :class_name => "Callout", :source => "callouts"
 
-	# DRG codes are by admission
+	# DRG, ICD and CPT codes are by admission
 	has_many :drgcodes, :through => :hadm, :class_name => "Drgcode", :source => "drgcodes"
-
-	# ICD and CPT codes are by ICU Stay
-	has_many :icd_diagnoses, :class_name => "DiagnosisIcd", :foreign_key => "icustay_id"
-	has_many :icd_procedures, :class_name => "ProcedureIcd", :foreign_key => "icustay_id"
-	has_many :cptevents, :class_name => "Cptevent", :foreign_key => "icustay_id"
+	has_many :icd_diagnoses, :through => :hadm, :class_name => "DiagnosisIcd", :source => "icd_diagnoses"
+	has_many :icd_procedures, :through => :hadm, :class_name => "ProcedureIcd", :source => "icd_procedures"
+	has_many :cptevents, :through => :hadm, :class_name => "Cptevent", :source => "cptevents"
 
 	# Labevents, Noteevents, and Microbiologyevents are by admission
 	has_many :labevents, :through => :hadm, :class_name => "Labevent", :source => "labevents"

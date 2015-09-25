@@ -6,24 +6,31 @@
 //= depend_on_asset "MEDITEMS.txt"
 
 setupQueryInterface = function() {
-  var $b = $('#icustay_detail_builder');
-  var $c = $('#medevents_builder');
-  var $d = $('#labevents_builder');
-  var $e = $('#icd_codes_builder');
+  // var $b = $('#icustay_detail_builder');
+  // var $c = $('#medevents_builder');
+  // var $d = $('#labevents_builder');
+  // var $e = $('#icd_diag_codes_builder');
 
   // Define filters
   var options = getOptions();
 
   // Initialize the builders
-  $('#icustay_detail_builder').queryBuilder(getOptions(getIcustayDetailFilters()));
+  // $('#icustay_detail_builder').queryBuilder(getOptions(getIcustayDetailFilters()));
+  $('#icustay_detail_builder').queryBuilder(getOptions(getIcustayeventsFilters()));
+  $('#admissions_builder').queryBuilder(getOptions(getAdmissionsFilters()));
+  $('#patients_builder').queryBuilder(getOptions(getPatientsFilters()));
   $('#medevents_builder').queryBuilder(getOptions(getMedeventsFilters()));
   $('#labevents_builder').queryBuilder(getOptions(getLabeventsFilters()));
-  $('#icd_codes_builder').queryBuilder(getOptions(getIcdCodeFilters()));
+  $('#icd_diag_codes_builder').queryBuilder(getOptions(getIcdCodeFilters()));
+  $('#icd_proc_codes_builder').queryBuilder(getOptions(getIcdCodeFilters()));
 
   // Remove the default rules from most of the builders
+  $('#admissions_builder_rule_0').find('button.btn-danger')[0].click();
+  $('#patients_builder_rule_0').find('button.btn-danger')[0].click();
   $('#medevents_builder_rule_0').find('button.btn-danger')[0].click();
   $('#labevents_builder_rule_0').find('button.btn-danger')[0].click();
-  $('#icd_codes_builder_rule_0').find('button.btn-danger')[0].click();
+  $('#icd_diag_codes_builder_rule_0').find('button.btn-danger')[0].click();
+  $('#icd_proc_codes_builder_rule_0').find('button.btn-danger')[0].click();
 
   // Remove the 'OR' buttons from the builders.
   $.each($('.group-conditions > label'), function(index, value) {
@@ -209,13 +216,19 @@ resetFieldSelectors = function() {
 runQuery = function() {
   // Don't run the query if the query builder validation fails
   var err1 = $('#icustay_detail_builder').queryBuilder('validate');
-  var err2 = $('#medevents_builder').queryBuilder('validate');
-  var err3 = $('#labevents_builder').queryBuilder('validate');
-  var err4 = $('#icd_codes_builder').queryBuilder('validate');
+  var err2 = $('#admissions_builder').queryBuilder('validate');
+  var err3 = $('#patients_builder').queryBuilder('validate');
+  var err4 = $('#medevents_builder').queryBuilder('validate');
+  var err5 = $('#labevents_builder').queryBuilder('validate');
+  var err6 = $('#icd_diag_codes_builder').queryBuilder('validate');
+  var err7 = $('#icd_proc_codes_builder').queryBuilder('validate');
   if ((err1 == false) ||
      (err2 == false) ||
      (err3 == false) ||
-     (err4 == false)) {
+     (err4 == false) ||
+     (err5 == false) ||
+     (err6 == false) ||
+     (err7 == false)) {
     return false;
   }
   // Determine which database tables we need to join
@@ -224,9 +237,12 @@ runQuery = function() {
 
   // Gather the 'where' (criterion) portion of the SQL query
   var icustay_detail = $('#icustay_detail_builder').queryBuilder('getSQL', false, false);
+  var admissions = $('#admissions_builder').queryBuilder('getSQL', false, false);
+  var patients = $('#patients_builder').queryBuilder('getSQL', false, false);
   var medevents = $('#medevents_builder').queryBuilder('getSQL', false, false);
   var labevents = $('#labevents_builder').queryBuilder('getSQL', false, false);
-  var icd_codes = $('#icd_codes_builder').queryBuilder('getSQL', false, false);
+  var icd_diag_codes = $('#icd_diag_codes_builder').queryBuilder('getSQL', false, false);
+  var icd_proc_codes = $('#icd_proc_codes_builder').queryBuilder('getSQL', false, false);
 
   // Gather the fields requested by the user
   var cols = []
@@ -250,8 +266,10 @@ runQuery = function() {
     $.each(v, function(index, value) {
       if (value.match('^drgcodes.')) {
         distinct.push(['drgcodes', value]);
-      } else if (value.match('^icd9.')) {
-        distinct.push(['icd_codes', value]);
+      } else if (value.match('^diagnoses_icd.')) {
+        distinct.push(['icd_diagnoses', value]);
+      } else if (value.match('^procedures_icd.')) {
+        distinct.push(['icd_procedures', value]);
       } else {
         distinct.push([null, value]);
       }
@@ -266,8 +284,12 @@ runQuery = function() {
     $.each(v, function(index, value) {
       if (value.match('^drgcodes.')) {
         aggregate.push(['drgcodes', value]);
-      } else if (value.match('^icd9.')) {
-        aggregate.push(['icd_codes', value]);
+      } else if (value.match('^diagnoses_icd.')) {
+        aggregate.push(['icd_diagnoses', value]);
+      } else if (value.match('^procedures_icd.')) {
+        aggregate.push(['icd_procedures', value]);
+      } else if (value.match('^patients.')) {
+        aggregate.push(['subject', value]);
       } else {
         aggregate.push([null, value]);
       }
@@ -290,9 +312,12 @@ runQuery = function() {
     url: 'query',
     type: 'POST',
     data: { icustay_detail: icustay_detail.sql,
+            admissions: admissions.sql,
+            patients: patients.sql,
             medevents: medevents.sql,
             labevents: labevents.sql,
-            icd_codes: icd_codes.sql,
+            icd_diag_codes: icd_diag_codes.sql,
+            icd_proc_codes: icd_proc_codes.sql,
             distinct: JSON.stringify(distinct),
             aggregate: JSON.stringify(aggregate),
             average: JSON.stringify(average),
@@ -313,6 +338,170 @@ $(function() {
   // Initial setup
   setupQueryInterface();
 });
+
+getAdmissionsFilters = function() {
+  return [
+      /*
+       * AGE
+       */
+      {
+        id: 'EXTRACT(year from (age(admittime, patients.dob)))',
+        label: 'Age',
+        type: 'integer',
+        operators: ['equal',
+                    'not_equal',
+                    'less',
+                    'less_or_equal',
+                    'greater',
+                    'greater_or_equal',
+                    'between',],
+        validation: {
+          min: 0,
+          max: 100
+        },
+        plugin: 'slider',
+        plugin_config: {
+          min: 0,
+          max: 100,
+          value: 0
+        },
+        onAfterSetValue: function(rule, value) {
+          var input = rule.$el.find('.rule-value-container input');
+          input.slider('setValue', value);
+          input.val(value);
+        }
+      }
+    ]; // END OF FILTERS ARRAY
+}
+
+getPatientsFilters = function() {
+  return [
+      /*
+       * GENDER
+       */
+      {
+        id: 'gender',
+        label: 'Gender',
+        type: 'string',
+        input: 'radio',
+        optgroup: null, 
+        values: {
+          'M': 'Male',
+          'F': 'Female'
+        },
+        default_value: 'M',
+        operators: ['equal',
+                    'is_null',
+                    'is_not_null']
+      },
+      /*
+       * DIED (DURING HOSPITAL ADMISSION)
+       */
+      {
+        id: 'hospital_expire_flag',
+        label: 'Died during hospital admission',
+        type: 'string',
+        input: 'radio',
+        optgroup: null, 
+        values: {
+          'N': 'No',
+          'Y': 'Yes'
+        },
+        default_value: 'N',
+        operators: ['equal',
+                    'is_null',
+                    'is_not_null']
+      }
+    ]; // END OF FILTERS ARRAY
+}
+
+getIcustayeventsFilters = function() {
+  return [
+    /*
+     * FIRST CAREUNIT
+     */
+    {
+      id: 'first_careunit',
+      label: 'First careunit location',
+      type: 'string',
+      input: 'checkbox',
+      optgroup: null, 
+      values: {
+        'CCU': 'CCU',
+        'CSICU': 'CSICU',
+        'CTICU': 'CTICU',
+        'CVICU': 'CVICU',
+        'TSICU': 'TSICU',
+        'MICU': 'MICU',
+        'MSICU': 'MSICU',
+        'NICU': 'NICU',
+        'NSICU': 'NSICU',
+        'SICU': 'SICU'
+      },
+      operators: ['in',
+                  'not_in']
+    },
+    /*
+     * Last CAREUNIT
+     */
+    {
+      id: 'last_careunit',
+      label: 'Last careunit location',
+      type: 'string',
+      input: 'checkbox',
+      optgroup: null, 
+      values: {
+        'CCU': 'CCU',
+        'CSICU': 'CSICU',
+        'CTICU': 'CTICU',
+        'CVICU': 'CVICU',
+        'TSICU': 'TSICU',
+        'MICU': 'MICU',
+        'MSICU': 'MSICU',
+        'NICU': 'NICU',
+        'NSICU': 'NSICU',
+        'SICU': 'SICU'
+      },
+      operators: ['in',
+                  'not_in']
+    },
+    /*
+     * ICU LOS
+     */
+    {
+      id: 'los',
+      label: 'ICU length of stay in days',
+      type: 'integer',
+      size: 5,
+      operators: ['equal',
+                  'not_equal',
+                  'less',
+                  'less_or_equal',
+                  'greater',
+                  'greater_or_equal',
+                  'between'],
+      validation: {
+        min: 0
+      }
+    },
+    /*
+     * DATABASE SOURCE 
+     */
+    {
+      id: 'dbsource',
+      label: 'Database Source (MetaVision / CareVue)',
+      type: 'string',
+      input: 'checkbox',
+      optgroup: null, 
+      values: {
+        'metavision': 'MetaVision',
+        'carevue': 'CareVue',
+      },
+      operators: ['in',
+                  'not_in']
+    }
+    ]; // END OF FILTERS ARRAY
+}
 
 getIcustayDetailFilters = function() {
   return [
@@ -1124,7 +1313,7 @@ getIcdCodeFilters = function() {
      * ICD Codes
      */
     {
-      id: 'code',
+      id: 'icd9_code',
       label: 'ICD-9 Code',
       type: 'string',
       input: 'select',

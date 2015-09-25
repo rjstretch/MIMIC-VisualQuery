@@ -16,15 +16,27 @@
         </div>
 
         <div id="icustay_detail_builder" class="mimic-builder">
-          <h4>ICU Stay Detail</h4>
+          <h4>ICU Stay Details</h4>
+        </div>
+
+        <div id="admissions_builder" class="mimic-builder">
+          <h4>Admission Details</h4>
+        </div>
+
+        <div id="patients_builder" class="mimic-builder">
+          <h4>Patient Details</h4>
         </div>
         
-        <div id="icd_codes_builder" class="mimic-builder">
-          <h4>ICD-9 Codes&nbsp;&nbsp;<small><%= link_to("Lookup", "https://www.cms.gov/medicare-coverage-database/staticpages/icd-9-code-lookup.aspx", :target => "_blank") %>&nbsp;&nbsp;&nbsp;Wildcards are allowed (e.g. 428.%)</small></h4>
+        <div id="icd_diag_codes_builder" class="mimic-builder">
+          <h4>ICD-9 Diagnosis Codes&nbsp;&nbsp;<small><%= link_to("Lookup", "https://www.cms.gov/medicare-coverage-database/staticpages/icd-9-code-lookup.aspx", :target => "_blank") %>&nbsp;&nbsp;&nbsp;Wildcards are allowed (e.g. 428.%)</small></h4>
+        </div>
+
+        <div id="icd_proc_codes_builder" class="mimic-builder">
+          <h4>ICD-9 Procedure Codes&nbsp;&nbsp;<small>&nbsp;&nbsp;&nbsp;Wildcards are allowed (e.g. 428.%)</small></h4>
         </div>
 
         <div id="medevents_builder" class="mimic-builder">
-          <h4>Medications Administered</h4>
+          <h4>Medications Administered<small>&nbsp;&nbsp;&nbsp;NB: Only cases with MetaVision data will be searched (~44% of cases).</small></h4>
         </div>
 
         <div id="labevents_builder" class="mimic-builder">
@@ -38,26 +50,27 @@
         <select id="fields_count" class="field_selector" multiple="multiple">
           <option value="subject_id">Subject ID</option>
           <option value="drgcodes.drg_code">DRG Code</option>
-          <option value="icd9.code">ICD Code</option>
+          <option value="diagnoses_icd.icd9_code">ICD-9 Diagnosis Codes</option>
+          <option value="procedures_icd.icd9_code">ICD-9 Procedure Codes</option>
         </select>
 
         <select id="fields_aggregate" class="field_selector" multiple="multiple">
-          <option value="gender">Gender</option>
-          <option value="icustay_age_group">Age grouping</option>
+          <option value="patients.gender">Gender</option>
+          <!-- <option value="icustay_age_group">Age grouping</option>
           <option value="sapsi_first">SAPS-I (first)</option>
           <option value="sapsi_min">SAPS-I (minimum)</option>
           <option value="sapsi_max">SAPS-I (maximum)</option>
           <option value="sofa_first">SOFA (first)</option>
           <option value="sofa_min">SOFA (minimum)</option>
-          <option value="sofa_max">SOFA (maximum)</option>
-          <option value="icustay_first_careunit">First careunit location</option>
-          <option value="icustay_first_service">First service</option>
-          <option value="icustay_last_careunit">Last careunit location</option>
-          <option value="icustay_last_service">Last service</option>
-          <option value="icustay_expire_flg">Died during ICU stay</option>
-          <option value="hospital_expire_flg">Died during hospital admission</option>
-          <option value="expire_flg">Died within 1 year (during or after discharge)</option>
-          <option value="icustay_total_num">Subject's number of ICU stays (for any given admission)</option>
+          <option value="sofa_max">SOFA (maximum)</option> -->
+          <option value="first_careunit">First careunit</option>
+          <!-- <option value="first_service">First service</option> -->
+          <option value="last_careunit">Last careunit</option>
+          <!-- <option value="icustay_last_service">Last service</option> -->
+          <!-- <option value="icustay_expire_flg">Died during ICU stay</option> -->
+          <option value="patients.hospital_expire_flag">Died during hospital admission</option>
+          <!-- <option value="expire_flg">Died within 1 year (during or after discharge)</option> -->
+          <!-- <option value="icustay_total_num">Subject's number of ICU stays (for any given admission)</option>
           <option value="subject_icustay_total_num">Subject's total number of ICU stays (all admissions)</option>
           <option value="icustay_seq">Order of a subject's ICU stays (for any given admission)</option>
           <option value="subject_icustay_seq">Order of a subject's ICU stays (all admissions)</option>
@@ -66,22 +79,23 @@
           <option value="hospital_first_flg">Subject's first hospital admission</option>
           <option value="hospital_last_flg">Subject's last hospital admission</option>
           <option value="icustay_first_flg">Subject's first ICU stay (for any given admission)</option>
-          <option value="icustay_last_flg">Subject's last ICU stay (for any given admission)</option>
+          <option value="icustay_last_flg">Subject's last ICU stay (for any given admission)</option> -->
 
           <option value="drgcodes.drg_code">DRG Codes</option>
-          <option value="icd9.code">ICD-9 Codes</option>
+          <option value="diagnoses_icd.icd9_code">ICD-9 Diagnosis Codes</option>
+          <option value="procedures_icd.icd9_code">ICD-9 Procedure Codes</option>
         </select>
 
         <select id="fields_average" class="field_selector" multiple="multiple">
-          <option value="icustay_admit_age">Age (at start of ICU stay)</option>
+          <!-- <option value="icustay_admit_age">Age (at start of ICU stay)</option>
           <option value="sapsi_first">SAPS-I (first)</option>
           <option value="sapsi_min">SAPS-I (minimum)</option>
           <option value="sapsi_max">SAPS-I (maximum)</option>
           <option value="sofa_first">SOFA (first)</option>
           <option value="sofa_min">SOFA (minimum)</option>
-          <option value="sofa_max">SOFA (maximum)</option>
-          <option value="icustay_los">ICU length of stay in minutes</option>
-          <option value="hospital_los">Hospital length of stay in minutes</option>
+          <option value="sofa_max">SOFA (maximum)</option> -->
+          <option value="los">ICU length of stay in days</option>
+          <!-- <option value="hospital_los">Hospital length of stay in minutes</option> -->
         </select>
 
         <br>
@@ -94,32 +108,40 @@
           <option value="hadm_id">Hospital admission ID</option>
           <option value="subject_id">Subject ID</option>
 
-          <option value="gender">Gender</option>
+          <option value="dbsource">Database Source</option>
+          <option value="first_careunit">First careunit</option>
+          <option value="last_careunit">Last careunit</option>
+          <option value="first_wardid">First ward ID</option>
+          <option value="last_wardid">Last ward ID</option>
+          <option value="intime">ICU Intime</option>
+          <option value="outtime">ICU Outtime</option>
+          <option value="los">ICU length of stay in days</option>
+          
+          <!-- <option value="gender">Gender</option>
           <option value="dob">Date of birth</option>
           <option value="dod">Date of death</option>
-          <option value="icustay_admit_age">Age on admission</option>
+           -->
+          <!-- <option value="icustay_admit_age">Age on admission</option>
           <option value="icustay_age_group">Age grouping</option>
           <option value="height">Patient height</option>
           <option value="weight_first">Patient weight (first)</option>
           <option value="weight_min">Patient weight (minimum)</option>
-          <option value="weight_maximum">Patient weight (maximum)</option>
+          <option value="weight_maximum">Patient weight (maximum)</option> -->
 
-          <option value="icustay_expire_flg">Died during ICU stay</option>
-          <option value="hospital_expire_flg">Died during hospital admission</option>
-          <option value="expire_flg">Died within 1 year (during or after discharge)</option>
+          <!-- <option value="icustay_expire_flg">Died during ICU stay</option> -->
+          <!-- <option value="hospital_expire_flag">Died during hospital admission</option> -->
+          <!-- <option value="expire_flg">Died within 1 year (during or after discharge)</option> -->
           
-          <option value="sapsi_first">SAPS-I (first)</option>
+          <!-- <option value="sapsi_first">SAPS-I (first)</option>
           <option value="sapsi_min">SAPS-I (minimum)</option>
           <option value="sapsi_max">SAPS-I (maximum)</option>
           <option value="sofa_first">SOFA (first)</option>
           <option value="sofa_min">SOFA (minimum)</option>
-          <option value="sofa_max">SOFA (maximum)</option>
+          <option value="sofa_max">SOFA (maximum)</option> -->
 
-          <option value="icustay_first_careunit">First careunit location</option>
-          <option value="icustay_first_service">First service</option>
-          <option value="icustay_last_careunit">Last careunit location</option>
-          <option value="icustay_last_service">Last service</option>
-          <option value="icustay_intime">Start time of ICU stay</option>
+          <!-- <option value="icustay_first_service">First service</option> -->
+          <!-- <option value="icustay_last_service">Last service</option> -->
+          <!-- <option value="icustay_intime">Start time of ICU stay</option>
           <option value="icustay_outtime">End time of ICU stay</option>
           <option value="icustay_los">ICU length of stay in minutes</option>
           <option value="icustay_first_flg">Subject's first ICU stay (for any given admission)</option>
@@ -127,29 +149,31 @@
           <option value="icustay_total_num">Subject's number of ICU stays (for any given admission)</option>
           <option value="icustay_seq">Order of a subject's ICU stays (for any given admission)</option>
           <option value="subject_icustay_total_num">Subject's total number of ICU stays (all admissions)</option>
-          <option value="subject_icustay_seq">Order of a subject's ICU stays (all admissions)</option>
+          <option value="subject_icustay_seq">Order of a subject's ICU stays (all admissions)</option> -->
 
-          <option value="hospital_admit_dt">Date of hospital admission</option>
+          <!-- <option value="hospital_admit_dt">Date of hospital admission</option>
           <option value="hospital_disch_dt">Date of hospital discharge</option>
           <option value="hospital_los">Hospital length of stay in minutes</option>
           <option value="hospital_first_flg">Subject's first hospital admission</option>
           <option value="hospital_last_flg">Subject's last hospital admission</option>
           <option value="hospital_total_num">Subject's number of hospital admissions</option>
-          <option value="hospital_seq">Order of subject's hospital admissions</option>
+          <option value="hospital_seq">Order of subject's hospital admissions</option> -->
           
-          <option value="matched_waveforms_num">Number of matched waveforms</option>
+          <!-- <option value="matched_waveforms_num">Number of matched waveforms</option> -->
         </select>
 
         <select id="fields_admission" class="field_selector" multiple="multiple">
           <option value="hadm.drgcodes.drg_code">DRG Code</option>
           <option value="hadm.drgcodes.description">DRG Description</option>
-          <option value="hadm.icd_codes.code">ICD9 Codes</option>
-          <option value="hadm.icd_codes.description">ICD9 Code Descriptions</option>
+          <option value="hadm.icd_diagnoses.icd9_code">ICD-9 Diagnosis Codes</option>
+          <option value="hadm.icd_diagnoses.description">ICD-9 Diagnosis Code Descriptions</option>
+          <option value="hadm.icd_procedures.icd9_code">ICD-9 Procedure Codes</option>
+          <!-- <option value="hadm.icd_procedures.code.description">ICD-9 Procedure Codes</option> -->
         </select>
 
-        <select id="fields_comorbidities" class="field_selector" multiple="multiple">
-          <%= options_for_select(@comorbidities) %>
-        </select>
+        <!-- <select id="fields_comorbidities" class="field_selector" multiple="multiple"> -->
+          <%# options_for_select(@comorbidities) %>
+        <!-- </select> -->
 
         <br>
         <br>

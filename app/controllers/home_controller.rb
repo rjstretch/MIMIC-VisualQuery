@@ -17,7 +17,18 @@ class HomeController < ApplicationController
 		@query_limit = 20
 	end
 
-	@data = IcustayDetail.where(params[:icustay_detail])
+	# @data = IcustayDetail.where(params[:icustay_detail])
+	@data = Icustayevent.where(params[:icustay_detail])
+
+	if !params[:admissions].blank?
+		admissions = Admission.joins(:subject).where(params[:admissions])
+		@data = @data.where{hadm_id.in(admissions.select{hadm_id})}
+	end
+
+	if !params[:patients].blank?
+		patients = Patient.where(params[:patients])
+		@data = @data.where{subject_id.in(patients.select{subject_id})}
+	end
 
 	if !params[:medevents].blank?
 		meds = Ioevent.where(params[:medevents])
@@ -26,13 +37,13 @@ class HomeController < ApplicationController
 
 	if !params[:labevents].blank?
 		labs = Labevent.where(params[:labevents])
-		@data = @data.where{icustay_id.in(labs.select{icustay_id})}
+		@data = @data.where{hadm_id.in(labs.select{hadm_id})}
 	end
 
-	if !params[:icd_codes].blank?
+	if !params[:icd_diag_codes].blank?
 		# Swap out the "IN" or "NOT IN" for "SIMILAR TO" or "NOT SIMILAR TO",
 		# because the latter two operators support wildcards (e.g. 428.%)
-		c1 = params[:icd_codes].gsub! ' IN(', ' SIMILAR TO('
+		c1 = params[:icd_diag_codes].gsub! ' IN(', ' SIMILAR TO('
 
 		# Alter the format of the bracket() contents from ('428.0', '428.1')
 		# to conform to SIMILAR TO's format of ('(428.0|428.1')'
@@ -49,10 +60,28 @@ class HomeController < ApplicationController
 
 		icd_diag = DiagnosisIcd.where(c2)
 		@data = @data.where{hadm_id.in(icd_diag.select{hadm_id})}
+	end
 
-		# TO BE IMPLEMENTED
-		# icd_proc = ProcedureIcd.where(c2)
-		# @data = @data.where{hadm_id.in(icd_proc.select{hadm_id})}
+	if !params[:icd_proc_codes].blank?
+		# Swap out the "IN" or "NOT IN" for "SIMILAR TO" or "NOT SIMILAR TO",
+		# because the latter two operators support wildcards (e.g. 428.%)
+		c1 = params[:icd_proc_codes].gsub! ' IN(', ' SIMILAR TO('
+
+		# Alter the format of the bracket() contents from ('428.0', '428.1')
+		# to conform to SIMILAR TO's format of ('(428.0|428.1')'
+		c2 = c1.gsub! '\', \'', '|'
+
+		# Check whether gsub failed to find ', ' in params[:icd_codes]
+		# (i.e. there was only one ICD term supplied by the user), in which
+		# case gsub returns nil
+		if c2.blank?
+			# Resort back to the original ('428.0') format, which is
+			# acceptable as long as there is only one term
+			c2 = c1
+		end
+
+		icd_proc = ProcedureIcd.where(c2)
+		@data = @data.where{hadm_id.in(icd_proc.select{hadm_id})}
 	end
 
 	if (params[:distinct] != "null")
