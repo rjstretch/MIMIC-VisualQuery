@@ -17,17 +17,19 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  host: <%= ENV['DATABASE_URL'] %>
+  # host: <%= ENV['DATABASE_URL'] %>
+  host: <%= ENV['MIMIC_HOST'] %>
+  port: <%= ENV['MIMIC_PORT'] %>
+  database: <%= ENV['MIMIC_DATABASE'] %>
+  username: <%= ENV['MIMIC_DATABASE_USER'] %>
+  password: <%= ENV['MIMIC_DATABASE_PASSWORD'] %>
+  schema_search_path: <%= ENV['MIMIC_SCHEMA_SEARCH_PATH'] %>
   # For details on connection pooling, see rails configuration guide
   # http://guides.rubyonrails.org/configuring.html#database-pooling
   pool: 5
 
 development:
   <<: *default
-  schema_search_path: <%= ENV['MIMIC_SCHEMA_SEARCH_PATH'] %>
-  #database: <%= ENV['MIMIC_DATABASE'] %>
-  #username: <%= ENV['MIMIC_DATABASE_USER'] %>
-  #password: <%= ENV['MIMIC_DATABASE_PASSWORD'] %>
 
   # The specified database role being used to connect to postgres.
   # To create additional roles in postgres see `$ createuser --help`.
@@ -84,6 +86,6 @@ test:
 #
 production:
   <<: *default
-  database: <%= ENV['MIMIC_DATABASE'] %>
-  username: <%= ENV['MIMIC_DATABASE_USER'] %>
-  password: <%= ENV['MIMIC_DATABASE_PASSWORD'] %>
+  #database: <%= ENV['MIMIC_DATABASE'] %>
+  #username: <%= ENV['MIMIC_DATABASE_USER'] %>
+  #password: <%= ENV['MIMIC_DATABASE_PASSWORD'] %>
