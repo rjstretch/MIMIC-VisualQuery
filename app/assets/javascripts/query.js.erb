@@ -6,10 +6,7 @@
 //= depend_on_asset "MEDITEMS.txt"
 
 setupQueryInterface = function() {
-  // var $b = $('#icustay_detail_builder');
-  // var $c = $('#medevents_builder');
-  // var $d = $('#labevents_builder');
-  // var $e = $('#icd_diag_codes_builder');
+  // var $a = $('#icustay_detail_builder');
 
   // Define filters
   var options = getOptions();
@@ -21,16 +18,21 @@ setupQueryInterface = function() {
   $('#patients_builder').queryBuilder(getOptions(getPatientsFilters()));
   $('#medevents_builder').queryBuilder(getOptions(getMedeventsFilters()));
   $('#labevents_builder').queryBuilder(getOptions(getLabeventsFilters()));
+  $('#drg_codes_builder').queryBuilder(getOptions(getDrgCodeFilters()));
   $('#icd_diag_codes_builder').queryBuilder(getOptions(getIcdCodeFilters()));
   $('#icd_proc_codes_builder').queryBuilder(getOptions(getIcdCodeFilters()));
+  $('#cpt_codes_builder').queryBuilder(getOptions(getCptCodeFilters()));
+
 
   // Remove the default rules from most of the builders
   $('#admissions_builder_rule_0').find('button.btn-danger')[0].click();
   $('#patients_builder_rule_0').find('button.btn-danger')[0].click();
   $('#medevents_builder_rule_0').find('button.btn-danger')[0].click();
   $('#labevents_builder_rule_0').find('button.btn-danger')[0].click();
+  $('#drg_codes_builder_rule_0').find('button.btn-danger')[0].click();
   $('#icd_diag_codes_builder_rule_0').find('button.btn-danger')[0].click();
   $('#icd_proc_codes_builder_rule_0').find('button.btn-danger')[0].click();
+  $('#cpt_codes_builder_rule_0').find('button.btn-danger')[0].click();
 
   // Remove the 'OR' buttons from the builders.
   $.each($('.group-conditions > label'), function(index, value) {
@@ -220,15 +222,19 @@ runQuery = function() {
   var err3 = $('#patients_builder').queryBuilder('validate');
   var err4 = $('#medevents_builder').queryBuilder('validate');
   var err5 = $('#labevents_builder').queryBuilder('validate');
-  var err6 = $('#icd_diag_codes_builder').queryBuilder('validate');
-  var err7 = $('#icd_proc_codes_builder').queryBuilder('validate');
+  var err6 = $('#drg_codes_builder').queryBuilder('validate');
+  var err7 = $('#icd_diag_codes_builder').queryBuilder('validate');
+  var err8 = $('#icd_proc_codes_builder').queryBuilder('validate');
+  var err9 = $('#cpt_codes_builder').queryBuilder('validate');
   if ((err1 == false) ||
      (err2 == false) ||
      (err3 == false) ||
      (err4 == false) ||
      (err5 == false) ||
      (err6 == false) ||
-     (err7 == false)) {
+     (err7 == false) ||
+     (err8 == false) ||
+     (err9 == false)) {
     return false;
   }
   // Determine which database tables we need to join
@@ -241,8 +247,10 @@ runQuery = function() {
   var patients = $('#patients_builder').queryBuilder('getSQL', false, false);
   var medevents = $('#medevents_builder').queryBuilder('getSQL', false, false);
   var labevents = $('#labevents_builder').queryBuilder('getSQL', false, false);
+  var drg_codes = $('#drg_codes_builder').queryBuilder('getSQL', false, false);
   var icd_diag_codes = $('#icd_diag_codes_builder').queryBuilder('getSQL', false, false);
   var icd_proc_codes = $('#icd_proc_codes_builder').queryBuilder('getSQL', false, false);
+  var cpt_codes = $('#cpt_codes_builder').queryBuilder('getSQL', false, false);
 
   // Gather the fields requested by the user
   var cols = []
@@ -316,8 +324,10 @@ runQuery = function() {
             patients: patients.sql,
             medevents: medevents.sql,
             labevents: labevents.sql,
+            drg_codes: drg_codes.sql,
             icd_diag_codes: icd_diag_codes.sql,
             icd_proc_codes: icd_proc_codes.sql,
+            cpt_codes: cpt_codes.sql,
             distinct: JSON.stringify(distinct),
             aggregate: JSON.stringify(aggregate),
             average: JSON.stringify(average),
@@ -370,6 +380,97 @@ getAdmissionsFilters = function() {
           input.slider('setValue', value);
           input.val(value);
         }
+      },
+      /*
+       * ADMISSION TYPE
+       */
+      {
+        id: 'admission_type',
+        label: 'Admission type',
+        type: 'string',
+        input: 'checkbox',
+        optgroup: null, 
+        values: {
+          'ELECTIVE': 'Elective',
+          'URGENT': 'Urgent',
+          'EMERGENCY': 'Emergency',
+          'NEWBORN': 'Newborn'
+        },
+        operators: ['in',
+                    'not_in']
+      },
+      /*
+       * ADMISSION LOCATION
+       */
+      {
+        id: 'admission_location',
+        label: 'Admission source (prior to hospital arrival)',
+        type: 'string',
+        input: 'checkbox',
+        optgroup: null, 
+        values: {
+          'EMERGENCY ROOM ADMIT': 'EMERGENCY ROOM ADMIT',
+          'TRANSFER FROM HOSP/EXTRAM': 'TRANSFER FROM HOSP/EXTRAM',
+          'TRANSFER FROM OTHER HEALT': 'TRANSFER FROM OTHER HEALT',
+          'CLINIC REFERRAL/PREMATURE': 'CLINIC REFERRAL/PREMATURE',
+          '** INFO NOT AVAILABLE **': 'N/A',
+          'TRANSFER FROM SKILLED NUR': 'TRANSFER FROM SKILLED NUR',
+          'TRSF WITHIN THIS FACILITY': 'TRSF WITHIN THIS FACILITY',
+          'HMO REFERRAL/SICK': 'HMO REFERRAL/SICK',
+          'PHYS REFERRAL/NORMAL DELI': 'PHYS REFERRAL/NORMAL DELI'
+        },
+        operators: ['in',
+                    'not_in']
+      },
+      /*
+       * DISCHARGE LOCATION
+       */
+      {
+        id: 'first_careunit',
+        label: 'First careunit location',
+        type: 'string',
+        input: 'checkbox',
+        optgroup: null, 
+        values: {
+          'HOME WITH HOME IV PROVIDR': 'HOME WITH HOME IV PROVIDR',
+          'REHAB/DISTINCT PART HOSP': 'REHAB/DISTINCT PART HOSP',
+          'SNF': 'SNF',
+          'HOSPICE-MEDICAL FACILITY': 'HOSPICE-MEDICAL FACILITY',
+          'HOME HEALTH CARE': 'HOME HEALTH CARE',
+          'SHORT TERM HOSPITAL': 'SHORT TERM HOSPITAL',
+          'LONG TERM CARE HOSPITAL': 'LONG TERM CARE HOSPITAL',
+          'DISC-TRAN TO FEDERAL HC': 'DISC-TRAN TO FEDERAL HC',
+          'LEFT AGAINST MEDICAL ADVI': 'LEFT AGAINST MEDICAL ADVI',
+          'OTHER FACILITY': 'OTHER FACILITY',
+          'SNF-MEDICAID ONLY CERTIF': 'SNF-MEDICAID ONLY CERTIF',
+          'HOME': 'HOME',
+          'DEAD/EXPIRED': 'DEAD/EXPIRED',
+          'HOSPICE-HOME': 'HOSPICE-HOME',
+          'DISCH-TRAN TO PSYCH HOSP': 'DISCH-TRAN TO PSYCH HOSP',
+          'DISC-TRAN CANCER/CHLDRN H': 'DISC-TRAN CANCER/CHLDRN H',
+          'ICF': 'ICF'
+        },
+        operators: ['in',
+                    'not_in']
+      },
+      /*
+       * INSURANCE
+       */
+      {
+        id: 'insurance',
+        label: 'Insurance',
+        type: 'string',
+        input: 'checkbox',
+        optgroup: null, 
+        values: {
+          'Self Pay': 'Self Pay',
+          'Medicare': 'Medicare',
+          'Medicaid': 'Medicaid',
+          'Private': 'Private',
+          'Government': 'Government'
+        },
+        operators: ['in',
+                    'not_in']
       }
     ]; // END OF FILTERS ARRAY
 }
@@ -1307,6 +1408,34 @@ getLabeventsFilters = function() {
     ]; // END OF FILTERS ARRAY
 };
 
+getDrgCodeFilters = function() {
+  return [
+    /*
+     * DRG Codes
+     */
+    {
+      id: 'drg_code',
+      label: 'DRG Code',
+      type: 'string',
+      input: 'select',
+      multiple: 'true',
+      unique: 'true',
+      operators: ['in',
+                  'not_in'],
+      plugin: 'selectize',
+      plugin_config: {
+        valueField: 'drg_code',
+        labelField: 'drg_code',
+        create: function(input) {
+          return {
+            drg_code: input
+          };
+        }
+      }
+    }
+    ];
+};
+
 getIcdCodeFilters = function() {
   return [
     /*
@@ -1328,6 +1457,34 @@ getIcdCodeFilters = function() {
         create: function(input) {
           return {
             icd_code: input
+          };
+        }
+      }
+    }
+    ];
+};
+
+getCptCodeFilters = function() {
+  return [
+    /*
+     * CPT Codes
+     */
+    {
+      id: 'cpt_cd',
+      label: 'CPT Code',
+      type: 'string',
+      input: 'select',
+      multiple: 'true',
+      unique: 'true',
+      operators: ['in',
+                  'not_in'],
+      plugin: 'selectize',
+      plugin_config: {
+        valueField: 'cpt_code',
+        labelField: 'cpt_code',
+        create: function(input) {
+          return {
+            cpt_code: input
           };
         }
       }

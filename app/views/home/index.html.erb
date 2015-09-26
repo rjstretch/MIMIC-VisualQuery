@@ -26,6 +26,10 @@
         <div id="patients_builder" class="mimic-builder">
           <h4>Patient Details</h4>
         </div>
+
+        <div id="drg_codes_builder" class="mimic-builder">
+          <h4>DRG Codes&nbsp;&nbsp;<small>&nbsp;&nbsp;&nbsp;Wildcards are allowed (e.g. 107 vs 10%)</small></h4>
+        </div>
         
         <div id="icd_diag_codes_builder" class="mimic-builder">
           <h4>ICD-9 Diagnosis Codes&nbsp;&nbsp;<small><%= link_to("Lookup", "https://www.cms.gov/medicare-coverage-database/staticpages/icd-9-code-lookup.aspx", :target => "_blank") %>&nbsp;&nbsp;&nbsp;Wildcards are allowed (e.g. 4280 vs 428%)</small></h4>
@@ -33,6 +37,10 @@
 
         <div id="icd_proc_codes_builder" class="mimic-builder">
           <h4>ICD-9 Procedure Codes&nbsp;&nbsp;<small>&nbsp;&nbsp;&nbsp;Wildcards are allowed (e.g. 3722 vs 372%)</small></h4>
+        </div>
+
+        <div id="cpt_codes_builder" class="mimic-builder">
+          <h4>CPT Codes&nbsp;&nbsp;<small>&nbsp;&nbsp;&nbsp;Wildcards are allowed (e.g. 43752 vs 437%)</small></h4>
         </div>
 
         <div id="medevents_builder" class="mimic-builder">
@@ -166,9 +174,12 @@
           <option value="hadm.drgcodes.drg_code">DRG Code</option>
           <option value="hadm.drgcodes.description">DRG Description</option>
           <option value="hadm.icd_diagnoses.icd9_code">ICD-9 Diagnosis Codes</option>
-          <option value="hadm.icd_diagnoses.description">ICD-9 Diagnosis Code Descriptions</option>
+          <option value="hadm.icd_diagnoses.code.short_title">ICD-9 Diagnosis Code Descriptions</option>
           <option value="hadm.icd_procedures.icd9_code">ICD-9 Procedure Codes</option>
-          <!-- <option value="hadm.icd_procedures.code.description">ICD-9 Procedure Codes</option> -->
+          <option value="hadm.icd_procedures.code.short_title">ICD-9 Procedure Code Descriptions</option>
+          <option value="hadm.cptevents.cpt_cd">CPT Codes</option>
+          <option value="hadm.cptevents.sectionheader">CPT Code Section Headers</option>
+          <option value="hadm.cptevents.subsectionheader">CPT Code Subsection Headers</option>
         </select>
 
         <!-- <select id="fields_comorbidities" class="field_selector" multiple="multiple"> -->
