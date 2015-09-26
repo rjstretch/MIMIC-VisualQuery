@@ -17,7 +17,6 @@
 default: &default
   adapter: postgresql
   encoding: unicode
-  # host: <%= ENV['DATABASE_URL'] %>
   host: <%= ENV['MIMIC_HOST'] %>
   port: <%= ENV['MIMIC_PORT'] %>
   database: <%= ENV['MIMIC_DATABASE'] %>
@@ -86,6 +85,3 @@ test:
 #
 production:
   <<: *default
-  #database: <%= ENV['MIMIC_DATABASE'] %>
-  #username: <%= ENV['MIMIC_DATABASE_USER'] %>
-  #password: <%= ENV['MIMIC_DATABASE_PASSWORD'] %>
