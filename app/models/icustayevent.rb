@@ -1,8 +1,10 @@
 class Icustayevent < ActiveRecord::Base
+	include Searchable
+
 	self.primary_key = 'icustay_id'
 	
-	belongs_to :subject, :class_name => "Patient", :foreign_key => "subject_id"
-	belongs_to :hadm, :class_name => "Admission", :foreign_key => "hadm_id"
+	belongs_to :patient, :class_name => "Patient", :foreign_key => "subject_id"
+	belongs_to :admission, :class_name => "Admission", :foreign_key => "hadm_id"
 
 	has_many :services, :through => :hadm, :class_name => "Service", :source => "services"
 	has_many :transfers, :through => :hadm, :class_name => "Transfer", :source => "transfers"
@@ -32,4 +34,24 @@ class Icustayevent < ActiveRecord::Base
 	has_many :microbiologyevent_org_items, :through => :microbiologyevents, :class_name => "DItem", source: "org_item"
 	has_many :microbiologyevent_ab_items, :through => :microbiologyevents, :class_name => "DItem", source: "ab_item"	
 	has_many :labevent_items, :through => :labevents, :class_name => "DLabitem", source: "item"
+
+	# Customize the JSON that is sent to Elasticsearch -- can account for relationships and associations in this manner
+	# http://www.rubydoc.info/gems/elasticsearch-model/
+	def as_indexed_json(options={})
+		as_json(
+			# only: [:subject_id, :gender, :dob, :dod, :dod_hosp, :dod_ssn, :hospital_expire_flag],
+			include: [:patient, :admission],
+			methods: [:age]
+		)
+	end
+
+	def age
+		a = self.admission
+		b = self.patient
+		if (!a.blank? && !b.blank?)
+			return ((a.admittime - b.dob) / 1.year).round
+		else
+			return nil
+		end
+	end
 end

@@ -1,4 +1,6 @@
 class Patient < ActiveRecord::Base 
+	include Searchable
+
 	self.primary_key = 'subject_id'
 
 	has_many :admissions, :class_name => "Admission", :foreign_key => "subject_id"
@@ -21,4 +23,47 @@ class Patient < ActiveRecord::Base
 	has_many :microbiologyevents, :class_name => "Microbiologyevent", :foreign_key => "subject_id"
 	has_many :noteevents, :class_name => "Noteevent", :foreign_key => "subject_id"
 	has_many :prescriptions, :class_name => "Prescription", :foreign_key => "subject_id"
+
+	# Customize the JSON that is sent to Elasticsearch -- can account for relationships and associations in this manner
+	# http://www.rubydoc.info/gems/elasticsearch-model/
+	def as_indexed_json(options={})
+		as_json(
+			# only: [:subject_id, :gender, :dob, :dod, :dod_hosp, :dod_ssn, :hospital_expire_flag],
+			include: { 
+				admissions: { 
+					include: [ :transfers, :services, :icustayevents, :drgcodes, :cptevents,
+						icd_diagnoses: { 
+							include: [ :code ] 
+						}, 
+						icd_procedures: {
+							include: [ :code ]
+						},
+						microbiologyevents: {
+							include: [ :ab_item, :org_item, :spec_item ]
+						}
+					]
+				}
+			}
+			#methods: [:full_name]
+		)
+	end
 end
+
+# Customize the document mapping
+# Patient.mappings.to_hash
+# => {
+#      :article => {
+#        :dynamic => "false",
+#        :properties => {
+#          :title => {
+#            :type          => "string",
+#            :analyzer      => "english",
+#            :index_options => "offsets"
+#          }
+#        }
+#      }
+#    }
+
+# Customize the document settings
+# Patient.settings.to_hash
+# { :index => { :number_of_shards => 1 } }

@@ -1,6 +1,10 @@
 source 'https://rubygems.org'
 ruby '2.2.2'
 
+# Elasticsearch
+gem 'elasticsearch-model', git: 'git://github.com/elasticsearch/elasticsearch-rails.git'
+gem 'elasticsearch-rails', git: 'git://github.com/elasticsearch/elasticsearch-rails.git'
+
 # MIMIC2-specific
 gem 'squeel'
 gem 'table_print'

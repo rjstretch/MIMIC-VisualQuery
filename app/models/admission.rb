@@ -1,4 +1,6 @@
 class Admission < ActiveRecord::Base
+	include Searchable
+
 	self.primary_key = 'hadm_id'
 	
 	belongs_to :subject, :class_name => "Patient", :foreign_key => "subject_id"
@@ -21,4 +23,13 @@ class Admission < ActiveRecord::Base
 	has_many :microbiologyevents, :class_name => "Microbiologyevent", :foreign_key => "hadm_id"
 	has_many :noteevents, :class_name => "Noteevent", :foreign_key => "hadm_id"
 	has_many :prescriptions, :class_name => "Prescription", :foreign_key => "hadm_id"
+
+	# Customize the JSON that is sent to Elasticsearch -- can account for relationships and associations in this manner
+	# http://www.rubydoc.info/gems/elasticsearch-model/
+	def as_indexed_json(options={})
+		as_json(
+			include: [:transfers, :services]
+			#methods: [:full_name]
+		)
+	end
 end
