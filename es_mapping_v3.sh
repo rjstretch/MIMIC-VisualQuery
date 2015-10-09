@@ -1648,3 +1648,273 @@ curl -PUT http://localhost:9200/labevents -d '{
       }
    }
 }'
+
+curl -XDELETE http://localhost:9200/admissions
+
+curl -PUT http://localhost:9200/admissions -d '{
+   "mappings": {
+      "admission": {
+         "properties": {
+            "admission_location": {
+               "type": "string",
+               "index": "not_analyzed"
+            },
+            "admission_type": {
+               "type": "string",
+               "index": "not_analyzed"
+            },
+            "admittime": {
+               "type": "date",
+               "format": "dateOptionalTime"
+            },
+            "age": {
+               "type": "long",
+               "index": "not_analyzed"
+            },
+            "cptevents": {
+               "properties": {
+                  "costcenter": {
+                     "type": "string",
+                     "index": "not_analyzed"
+                  },
+                  "cpt_cd": {
+                     "type": "string",
+                     "index": "not_analyzed"
+                  },
+                  "cpt_number": {
+                     "type": "long",
+                     "index": "not_analyzed"
+                  },
+                  "cpt_suffix": {
+                     "type": "string",
+                     "index": "not_analyzed"
+                  },
+                  "description": {
+                     "type": "multi_field",
+                     "fields" : {
+                         "description" : { "type" : "string", "index" : "not_analyzed" },
+                         "analyzed" : { "type" : "string", "index" : "analyzed" }
+                     }
+                  },
+                  "hadm_id": {
+                     "type": "long",
+                     "index": "not_analyzed"
+                  },
+                  "row_id": {
+                     "type": "long",
+                     "index": "not_analyzed"
+                  },
+                  "sectionheader": {
+                     "type": "string",
+                     "index": "not_analyzed"
+                  },
+                  "subject_id": {
+                     "type": "long",
+                     "index": "not_analyzed"
+                  },
+                  "subsectionheader": {
+                     "type": "string",
+                     "index": "not_analyzed"
+                  },
+                  "ticket_id_seq": {
+                     "type": "long",
+                     "index": "not_analyzed"
+                  }
+               }
+            },
+            "diagnosis": {
+               "type": "multi_field",
+               "fields" : {
+                   "diagnosis" : { "type" : "string", "index" : "not_analyzed" },
+                   "analyzed" : { "type" : "string", "index" : "analyzed" }
+               }
+            },
+            "discharge_location": {
+               "type": "string",
+               "index": "not_analyzed"
+            },
+            "dischtime": {
+               "type": "date",
+               "format": "dateOptionalTime"
+            },
+            "drgcodes": {
+               "properties": {
+                  "description": {
+                     "type": "multi_field",
+                     "fields" : {
+                         "description" : { "type" : "string", "index" : "not_analyzed" },
+                         "analyzed" : { "type" : "string", "index" : "analyzed" }
+                     }
+                  },
+                  "drg_code": {
+                     "type": "string",
+                     "index" : "not_analyzed"
+                  },
+                  "drg_mortality": {
+                     "type": "long",
+                     "index" : "not_analyzed"
+                  },
+                  "drg_severity": {
+                     "type": "long",
+                     "index" : "not_analyzed"
+                  },
+                  "drg_type": {
+                     "type": "string",
+                     "index" : "not_analyzed"
+                  },
+                  "hadm_id": {
+                     "type": "long",
+                     "index" : "not_analyzed"
+                  },
+                  "row_id": {
+                     "type": "long",
+                     "index" : "not_analyzed"
+                  },
+                  "subject_id": {
+                     "type": "long",
+                     "index" : "not_analyzed"
+                  }
+               }
+            },
+            "ethnicity": {
+               "type": "string",
+               "index" : "not_analyzed"
+            },
+            "hadm_id": {
+               "type": "long",
+               "index" : "not_analyzed"
+            },
+            "has_chartevents_data": {
+               "type": "long",
+               "index" : "not_analyzed"
+            },
+            "has_ioevents_data": {
+               "type": "long",
+               "index" : "not_analyzed"
+            },
+            "icd_diagnoses": {
+               "properties": {
+                  "description": {
+                     "type": "multi_field",
+                     "fields" : {
+                         "description" : { "type" : "string", "index" : "not_analyzed" },
+                         "analyzed" : { "type" : "string", "index" : "analyzed" }
+                     }
+                  },
+                  "hadm_id": {
+                     "type": "long",
+                     "index" : "not_analyzed"
+                  },
+                  "icd9_code": {
+                     "type": "string",
+                     "index" : "not_analyzed"
+                  },
+                  "row_id": {
+                     "type": "long",
+                     "index" : "not_analyzed"
+                  },
+                  "sequence": {
+                     "type": "long",
+                     "index" : "not_analyzed"
+                  },
+                  "subject_id": {
+                     "type": "long",
+                     "index" : "not_analyzed"
+                  }
+               }
+            },
+            "icd_procedures": {
+               "properties": {
+                  "description": {
+                     "type": "multi_field",
+                     "fields" : {
+                         "description" : { "type" : "string", "index" : "not_analyzed" },
+                         "analyzed" : { "type" : "string", "index" : "analyzed" }
+                     }
+                  },
+                  "hadm_id": {
+                     "type": "long",
+                     "index" : "not_analyzed"
+                  },
+                  "icd9_code": {
+                     "type": "string",
+                     "index" : "not_analyzed"
+                  },
+                  "proc_seq_num": {
+                     "type": "long",
+                     "index" : "not_analyzed"
+                  },
+                  "row_id": {
+                     "type": "long",
+                     "index" : "not_analyzed"
+                  },
+                  "subject_id": {
+                     "type": "long",
+                     "index" : "not_analyzed"
+                  }
+               }
+            },
+            "insurance": {
+               "type": "string",
+               "index" : "not_analyzed"
+            },
+            "language": {
+               "type": "string",
+               "index" : "not_analyzed"
+            },
+            "marital_status": {
+               "type": "string",
+               "index" : "not_analyzed"
+            },
+            "patient": {
+               "properties": {
+                  "dob": {
+                     "type": "date",
+                     "format": "dateOptionalTime"
+                  },
+                  "dod": {
+                     "type": "date",
+                     "format": "dateOptionalTime"
+                  },
+                  "dod_hosp": {
+                     "type": "date",
+                     "format": "dateOptionalTime"
+                  },
+                  "dod_ssn": {
+                     "type": "date",
+                     "format": "dateOptionalTime"
+                  },
+                  "gender": {
+                     "type": "string",
+                     "index": "not_analyzed"
+                  },
+                  "hospital_expire_flag": {
+                     "type": "string",
+                     "index": "not_analyzed"
+                  },
+                  "row_id": {
+                     "type": "long",
+                     "index": "not_analyzed"
+                  },
+                  "subject_id": {
+                     "type": "long",
+                     "index": "not_analyzed"
+                  }
+               }
+            },
+            "religion": {
+               "type": "string",
+               "index" : "not_analyzed"
+            },
+            "row_id": {
+               "type": "long",
+               "index" : "not_analyzed"
+            },
+            "subject_id": {
+               "type": "long",
+               "index" : "not_analyzed"
+            }
+         }
+      }
+   }
+}'
