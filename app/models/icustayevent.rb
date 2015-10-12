@@ -6,20 +6,20 @@ class Icustayevent < ActiveRecord::Base
 	belongs_to :patient, :class_name => "Patient", :foreign_key => "subject_id"
 	belongs_to :admission, :class_name => "Admission", :foreign_key => "hadm_id"
 
-	has_many :services, :through => :hadm, :class_name => "Service", :source => "services"
-	has_many :transfers, :through => :hadm, :class_name => "Transfer", :source => "transfers"
-	has_many :callouts, :through => :hadm, :class_name => "Callout", :source => "callouts"
+	has_many :services, :through => :admission, :class_name => "Service", :source => "services"
+	has_many :transfers, :through => :admission, :class_name => "Transfer", :source => "transfers"
+	has_many :callouts, :through => :admission, :class_name => "Callout", :source => "callouts"
 
 	# DRG, ICD and CPT codes are by admission
-	has_many :drgcodes, :through => :hadm, :class_name => "Drgcode", :source => "drgcodes"
-	has_many :icd_diagnoses, :through => :hadm, :class_name => "DiagnosisIcd", :source => "icd_diagnoses"
-	has_many :icd_procedures, :through => :hadm, :class_name => "ProcedureIcd", :source => "icd_procedures"
-	has_many :cptevents, :through => :hadm, :class_name => "Cptevent", :source => "cptevents"
+	has_many :drgcodes, :through => :admission, :class_name => "Drgcode", :source => "drgcodes"
+	has_many :icd_diagnoses, :through => :admission, :class_name => "DiagnosisIcd", :source => "icd_diagnoses"
+	has_many :icd_procedures, :through => :admission, :class_name => "ProcedureIcd", :source => "icd_procedures"
+	has_many :cptevents, :through => :admission, :class_name => "Cptevent", :source => "cptevents"
 
 	# Labevents, Noteevents, and Microbiologyevents are by admission
-	has_many :labevents, :through => :hadm, :class_name => "Labevent", :source => "labevents"
-	has_many :noteevents, :through => :hadm, :class_name => "Noteevent", :source => "noteevents"
-	has_many :microbiologyevents, :through => :hadm, :class_name => "Microbiologyevent", :source => "microbiologyevents"
+	has_many :labevents, :through => :admission, :class_name => "Labevent", :source => "labevents"
+	has_many :noteevents, :through => :admission, :class_name => "Noteevent", :source => "noteevents"
+	has_many :microbiologyevents, :through => :admission, :class_name => "Microbiologyevent", :source => "microbiologyevents"
 
 	# Chartevents, Datetimeevents, Ioevents and Prescriptions are by ICU Stay
 	has_many :chartevents, :class_name => "Chartevent", :foreign_key => "icustay_id"

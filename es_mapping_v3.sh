@@ -1918,3 +1918,161 @@ curl -PUT http://localhost:9200/admissions -d '{
       }
    }
 }'
+
+curl -XDELETE http://localhost:9200/noteevents
+
+curl -PUT http://localhost:9200/noteevents -d '{
+   "mappings": {
+      "noteevent": {
+         "properties": {
+            "admission": {
+               "properties": {
+                  "admission_location": {
+                     "type": "string",
+                     "index": "not_analyzed"
+                  },
+                  "admission_type": {
+                     "type": "string",
+                     "index": "not_analyzed"
+                  },
+                  "admittime": {
+                     "type": "date",
+                     "format": "dateOptionalTime"
+                  },
+                  "diagnosis": {
+                     "type": "multi_field",
+                     "fields" : {
+                         "diagnosis" : { "type" : "string", "index" : "not_analyzed" },
+                         "analyzed" : { "type" : "string", "index" : "analyzed" }
+                     }
+                  },
+                  "discharge_location": {
+                     "type": "string",
+                     "index": "not_analyzed"
+                  },
+                  "dischtime": {
+                     "type": "date",
+                     "format": "dateOptionalTime"
+                  },
+                  "ethnicity": {
+                     "type": "string",
+                     "index": "not_analyzed"
+                  },
+                  "hadm_id": {
+                     "type": "long",
+                     "index": "not_analyzed"
+                  },
+                  "has_chartevents_data": {
+                     "type": "long",
+                     "index": "not_analyzed"
+                  },
+                  "has_ioevents_data": {
+                     "type": "long",
+                     "index": "not_analyzed"
+                  },
+                  "insurance": {
+                     "type": "string",
+                     "index": "not_analyzed"
+                  },
+                  "language": {
+                     "type": "string",
+                     "index": "not_analyzed"
+                  },
+                  "marital_status": {
+                     "type": "string",
+                     "index": "not_analyzed"
+                  },
+                  "religion": {
+                     "type": "string",
+                     "index": "not_analyzed"
+                  },
+                  "row_id": {
+                     "type": "long",
+                     "index": "not_analyzed"
+                  },
+                  "subject_id": {
+                     "type": "long",
+                     "index": "not_analyzed"
+                  }
+               }
+            },
+            "age": {
+               "type": "long",
+               "index": "not_analyzed"
+            },
+            "category": {
+               "type": "string",
+               "index": "not_analyzed"
+            },
+            "chartdate": {
+               "type": "date",
+               "format": "dateOptionalTime"
+            },
+            "description": {
+               "type": "string",
+               "index": "not_analyzed"
+            },
+            "hadm_id": {
+               "type": "long",
+               "index": "not_analyzed"
+            },
+            "iserror": {
+               "type": "string",
+               "index": "not_analyzed"
+            },
+            "patient": {
+               "properties": {
+                  "dob": {
+                     "type": "date",
+                     "format": "dateOptionalTime"
+                  },
+                  "dod": {
+                     "type": "date",
+                     "format": "dateOptionalTime"
+                  },
+                  "dod_hosp": {
+                     "type": "date",
+                     "format": "dateOptionalTime"
+                  },
+                  "dod_ssn": {
+                     "type": "date",
+                     "format": "dateOptionalTime"
+                  },
+                  "gender": {
+                     "type": "string",
+                     "index": "not_analyzed"
+                  },
+                  "hospital_expire_flag": {
+                     "type": "string",
+                     "index": "not_analyzed"
+                  },
+                  "row_id": {
+                     "type": "long",
+                     "index": "not_analyzed"
+                  },
+                  "subject_id": {
+                     "type": "long",
+                     "index": "not_analyzed"
+                  }
+               }
+            },
+            "record_id": {
+               "type": "long",
+               "index": "not_analyzed"
+            },
+            "row_id": {
+               "type": "long",
+               "index": "not_analyzed"
+            },
+            "subject_id": {
+               "type": "long",
+               "index": "not_analyzed"
+            },
+            "text": {
+               "type": "string",
+               "index": "analyzed"
+            }
+         }
+      }
+   }
+}'
